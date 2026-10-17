@@ -43,7 +43,7 @@ sf-jfx (parent pom)
 | 8 | Fidelización, precios y promociones | `HECHO` |
 | 9 | Reportes y analítica | `HECHO` |
 | 10 | Administración y operación | `HECHO` |
-| 11 | Pulido y aseguramiento | Pendiente |
+| 11 | Pulido y aseguramiento | `HECHO` |
 
 ---
 
@@ -141,7 +141,7 @@ _(Historial específico de precios/costos se activará al existir productos — 
 - [x] UI: consulta de ventas (ver/anular) e historial de sesiones de caja.
 
 **Cierre:** una venta se cobra, descuenta stock y se cierra el turno con arqueo. ✔
-_Pendiente para pulido (Hito 11): descuento **por línea** con autorización por PIN, ventas en paralelo y venta 1-ítem. El enganche de la **Nota de Crédito** se hace en el Hito 7._
+_Completado en Hito 11: descuento **por línea** con autorización por PIN, **venta rápida 1-ítem** (F9) y **nueva venta en paralelo** usando carritos aparcados (F7/F8). El enganche de la **Nota de Crédito** se hizo en el Hito 7._
 
 ---
 
@@ -213,14 +213,15 @@ _Dispositivos con configuración JSON por sucursal/caja; respaldos manuales y di
 
 ---
 
-## Hito 11 — Pulido y aseguramiento
+## Hito 11 — Pulido y aseguramiento `[HECHO]`
 
-- [ ] Coherencia visual final, atajos de teclado, accesibilidad y validaciones.
-- [ ] Pruebas unitarias de `core`: reglas fiscales (clave de acceso, impuestos), costeo PPP, resolución de precios/promociones.
-- [ ] Pruebas de flujo de caja y de ciclo de venta.
-- [ ] Revisión de rendimiento en listados grandes (paginación, índices).
+- [x] Coherencia visual final, atajos de teclado, accesibilidad y validaciones.
+- [x] Pruebas unitarias de `core`: reglas fiscales (clave de acceso, impuestos), costeo PPP, resolución de precios/promociones.
+- [x] Pruebas de flujo de caja y de ciclo de venta.
+- [x] Revisión de rendimiento en listados grandes (paginación, índices).
 
-**Cierre:** proyecto estable, cubierto por pruebas y listo para uso real.
+**Cierre:** proyecto estable, cubierto por pruebas y listo para uso real. ✔
+_Paginación en servidor para productos, ventas, clientes, proveedores y comprobantes; índices de rendimiento (`V7`); atajos F5/Ctrl+F en listados y F7/F9 en POS; descuento por línea autorizado por PIN; venta rápida de un ítem; etiquetas accesibles y foco automático en formularios; formato monetario unificado; pruebas de clave de acceso/catálogo SRI, PPP, promociones, autorización por PIN, caja y paginación._
 
 ---
 
@@ -249,3 +250,4 @@ _Dispositivos con configuración JSON por sucursal/caja; respaldos manuales y di
 | 8 | 2026-10-16 | Fidelización (puntos por compra y canje), promociones (%, monto, NxM, precio fijo con prioridad sin acumular), cupones con uso, ajuste masivo de precios por categoría; integración en caja (acumular/canje) y botón Promociones/Cupón en POS. 36 pruebas verdes. |
 | 9 | 2026-10-16 | Reportes y analítica: dashboard con KPIs y gráficos en vivo, 22 reportes en 6 grupos con filtros (fecha/sucursal/categoría/cajero), vistas guardadas (`V5`), exportación CSV/XLSX/PDF (Apache POI). 42 pruebas verdes. |
 | 10 | 2026-10-16 | Administración: dispositivos (impresoras/lector/balanza/gaveta), respaldo y restauración con programación e historial (`V6`), perfiles de instalación, importación CSV/XLSX de clientes y proveedores con vista previa, consola de migraciones. 49 pruebas verdes. |
+| 11 | 2026-10-16 | Pulido y aseguramiento: paginación en servidor (productos, ventas, clientes, proveedores, comprobantes), índices (`V7`), atajos F5/Ctrl+F y POS F7/F9, descuento por línea con PIN, venta rápida, accesibilidad y foco en formularios, formato monetario unificado, pruebas fiscales, PPP, promociones, autorización, caja y paginación. 72 pruebas verdes. |
