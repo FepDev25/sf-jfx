@@ -3,6 +3,7 @@ package ec.sfjfx.ui.vistas;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import ec.sfjfx.core.modelo.Caja;
 import ec.sfjfx.core.modelo.Sucursal;
@@ -12,7 +13,10 @@ import ec.sfjfx.core.repositorio.SucursalRepositorio;
 import ec.sfjfx.core.seguridad.Sesion;
 import ec.sfjfx.core.seguridad.SesionActual;
 import ec.sfjfx.core.servicio.GestorModulos;
+import ec.sfjfx.core.servicio.ServicioRespaldo;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -26,6 +30,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 /** Shell principal: cabecera, menu lateral por modulos y area de contenido. */
 public final class Shell extends BorderPane {
@@ -36,6 +41,8 @@ public final class Shell extends BorderPane {
 
     private final StackPane contenido = new StackPane();
     private final ComboBox<Caja> selectorCaja = new ComboBox<>();
+    private final AtomicBoolean respaldoEnCurso = new AtomicBoolean();
+    private Timeline programador;
 
     public Shell(Sesion sesion, Runnable alSalir) {
         this.sesion = sesion;
@@ -44,6 +51,7 @@ public final class Shell extends BorderPane {
         setLeft(construirSidebar());
         setCenter(contenido);
         mostrarInicio();
+        iniciarProgramadorRespaldos();
     }
 
     private Region construirCabecera(Runnable alSalir) {
@@ -79,6 +87,9 @@ public final class Shell extends BorderPane {
         Button salir = new Button("Salir");
         salir.getStyleClass().add("boton-secundario");
         salir.setOnAction(e -> {
+            if (programador != null) {
+                programador.stop();
+            }
             SesionActual.cerrar();
             alSalir.run();
         });
@@ -172,6 +183,29 @@ public final class Shell extends BorderPane {
 
     private void mostrarInicio() {
         contenido.getChildren().setAll(new ec.sfjfx.ui.vistas.VistaDashboard());
+    }
+
+    private void iniciarProgramadorRespaldos() {
+        programador = new Timeline(new KeyFrame(Duration.minutes(15), e -> ejecutarRespaldoProgramado()));
+        programador.setCycleCount(Timeline.INDEFINITE);
+        programador.play();
+    }
+
+    private void ejecutarRespaldoProgramado() {
+        if (!respaldoEnCurso.compareAndSet(false, true)) {
+            return;
+        }
+        Thread hilo = new Thread(() -> {
+            try {
+                new ServicioRespaldo().ejecutarProgramadoSiCorresponde();
+            } catch (RuntimeException e) {
+                System.err.println("Respaldo programado fallo: " + e.getMessage());
+            } finally {
+                respaldoEnCurso.set(false);
+            }
+        }, "respaldo-programado");
+        hilo.setDaemon(true);
+        hilo.start();
     }
 
     private void mostrarModulo(ModuloSistema modulo) {
