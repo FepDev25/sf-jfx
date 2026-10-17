@@ -10,4 +10,4 @@ Documentación de diseño del sistema de facturación para supermercados.
 | [`roadmap.md`](roadmap.md) | Arquitectura de módulos Maven y hitos de construcción (con casillas de avance). |
 | [`mockups/`](mockups/) | Prototipos visuales HTML de las pantallas clave. |
 
-Estado: **Hitos 0 a 9 cerrados**. Siguiente: Hito 10 — Administración y operación.
+Estado: **Hitos 0 a 10 cerrados**. Siguiente: Hito 11 — Pulido y aseguramiento.

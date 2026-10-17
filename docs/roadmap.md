@@ -42,7 +42,7 @@ sf-jfx (parent pom)
 | 7 | Facturación electrónica (SRI) | `HECHO` |
 | 8 | Fidelización, precios y promociones | `HECHO` |
 | 9 | Reportes y analítica | `HECHO` |
-| 10 | Administración y operación | Pendiente |
+| 10 | Administración y operación | `HECHO` |
 | 11 | Pulido y aseguramiento | Pendiente |
 
 ---
@@ -200,15 +200,16 @@ _22 reportes en 6 grupos sobre el kardex, ventas, compras, CxC/CxP, comprobantes
 
 ---
 
-## Hito 10 — Administración y operación
+## Hito 10 — Administración y operación `[HECHO]`
 
-- [ ] Dispositivos: impresora térmica 80mm, A4, lector de barras (HID), balanza, gaveta.
-- [ ] Respaldo / restauración (pg_dump/pg_restore) con programación e historial.
-- [ ] Consola de módulos y perfiles (feature flags) y parámetros del negocio.
-- [ ] Importaciones masivas (catálogo, clientes, proveedores).
-- [ ] Estado de migraciones de esquema.
+- [x] Dispositivos: impresora térmica 80mm, A4, lector de barras (HID), balanza, gaveta.
+- [x] Respaldo / restauración (pg_dump/pg_restore) con programación e historial.
+- [x] Consola de módulos y perfiles (feature flags) y parámetros del negocio.
+- [x] Importaciones masivas (catálogo, clientes, proveedores).
+- [x] Estado de migraciones de esquema.
 
-**Cierre:** administración integral sin tocar la base de datos a mano.
+**Cierre:** administración integral sin tocar la base de datos a mano. ✔
+_Dispositivos con configuración JSON por sucursal/caja; respaldos manuales y diarios programados con historial (`V6`); perfiles Supermercado/Minimercado/Tienda; importación de clientes y proveedores desde CSV/XLSX con vista previa y validación; consola de migraciones con aplicación de pendientes._
 
 ---
 
@@ -247,3 +248,4 @@ _22 reportes en 6 grupos sobre el kardex, ventas, compras, CxC/CxP, comprobantes
 | 7 | 2026-10-16 | Facturación SRI simulada: numeración, clave de acceso 49 dígitos, XML SRI (factura/NC/ND/retención/guía/liquidación), firma XMLDSig con `.p12`, RIDE PDF con código de barras, emisión desde venta/devolución/retención, anulación y certificados. 35 pruebas verdes. |
 | 8 | 2026-10-16 | Fidelización (puntos por compra y canje), promociones (%, monto, NxM, precio fijo con prioridad sin acumular), cupones con uso, ajuste masivo de precios por categoría; integración en caja (acumular/canje) y botón Promociones/Cupón en POS. 36 pruebas verdes. |
 | 9 | 2026-10-16 | Reportes y analítica: dashboard con KPIs y gráficos en vivo, 22 reportes en 6 grupos con filtros (fecha/sucursal/categoría/cajero), vistas guardadas (`V5`), exportación CSV/XLSX/PDF (Apache POI). 42 pruebas verdes. |
+| 10 | 2026-10-16 | Administración: dispositivos (impresoras/lector/balanza/gaveta), respaldo y restauración con programación e historial (`V6`), perfiles de instalación, importación CSV/XLSX de clientes y proveedores con vista previa, consola de migraciones. 49 pruebas verdes. |

@@ -81,13 +81,13 @@ mvn -pl core exec:java     # aplica las migraciones pendientes
 
 ## Estado
 
-- **Hitos 0 a 9 cerrados**: cimientos, organización/seguridad, catálogo, inventario, compras,
-  ventas/POS/caja, clientes/pedidos, facturación SRI (simulada), fidelización/promociones y
-  **reportes/analítica** (dashboard con KPIs y gráficos, 22 reportes en 6 grupos, vistas guardadas
-  y exportación CSV/XLSX/PDF).
-- Base de datos Docker (PostgreSQL 17, puerto 55432): 87 tablas (`V1`–`V5`) + datos base.
+- **Hitos 0 a 10 cerrados**: cimientos, organización/seguridad, catálogo, inventario, compras,
+  ventas/POS/caja, clientes/pedidos, facturación SRI (simulada), fidelización/promociones,
+  **reportes/analítica** y **administración/operación** (dispositivos, respaldo/restauración,
+  perfiles, importaciones masivas y consola de migraciones).
+- Base de datos Docker (PostgreSQL 17, puerto 55432): 87 tablas (`V1`–`V6`) + datos base.
 - Usuario demo: `admin` / `admin`.
-- Siguiente: **Hito 10 — Administración y operación** (dispositivos, respaldo/restauración,
-  consola de módulos, importaciones masivas y estado de migraciones).
+- Siguiente: **Hito 11 — Pulido y aseguramiento** (coherencia visual, pruebas fiscales/PPP/precios,
+  flujos de caja/venta y rendimiento de listados).
 
 Ver [`docs/`](docs/) para el diseño completo y [`docs/roadmap.md`](docs/roadmap.md) para el avance.
