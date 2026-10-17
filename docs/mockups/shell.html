@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sf-jfx — Mockup: Shell + Dashboard</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <div class="aviso">Mockup de referencia (no es la app real) — sf-jfx</div>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="marca">sf-jfx</div>
+      <button class="nav activo">Inicio</button>
+      <div class="grupo">Operacion</div>
+      <button class="nav">Ventas / POS</button>
+      <button class="nav">Clientes</button>
+      <button class="nav">Fidelizacion</button>
+      <div class="grupo">Catalogo e inventario</div>
+      <button class="nav">Productos</button>
+      <button class="nav">Inventario</button>
+      <button class="nav">Bodegas</button>
+      <button class="nav">Listas de precio</button>
+      <button class="nav">Promociones</button>
+      <div class="grupo">Compras</div>
+      <button class="nav">Compras</button>
+      <button class="nav">Proveedores</button>
+      <div class="grupo">Administracion</div>
+      <button class="nav">Facturacion</button>
+      <button class="nav">Reportes</button>
+      <button class="nav">Usuarios</button>
+      <button class="nav">Configuracion</button>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+      <div class="cabecera">
+        <span class="empresa">Supermercado Demo</span>
+        <span class="pill">Matriz Quito</span>
+        <span class="pill">Caja 1</span>
+        <span class="spacer"></span>
+        <span class="suave">Administrador del Sistema</span>
+        <span class="avatar">A</span>
+      </div>
+
+      <div class="contenido">
+        <h1 class="titulo">Inicio</h1>
+        <p class="sub">Resumen de hoy · Matriz Quito</p>
+
+        <div class="grid cols-4">
+          <div class="card"><h3>Ventas de hoy</h3><div class="kpi">$ 4.820,50</div><div class="delta">+12% vs ayer</div></div>
+          <div class="card"><h3>Ticket promedio</h3><div class="kpi">$ 14,35</div><div class="delta">+3%</div></div>
+          <div class="card"><h3>Transacciones</h3><div class="kpi">336</div><div class="delta">+8%</div></div>
+          <div class="card"><h3>Productos bajo stock</h3><div class="kpi alerta">27</div><div class="delta" style="color:#d97706">requiere reposicion</div></div>
+        </div>
+
+        <div class="grid cols-2" style="margin-top:16px">
+          <div class="card">
+            <h3>Ventas por hora</h3>
+            <div style="height:150px; display:flex; align-items:flex-end; gap:6px; padding-top:8px">
+              <div style="flex:1;height:30%;background:#dbeafe;border-radius:6px"></div>
+              <div style="flex:1;height:45%;background:#bfdbfe;border-radius:6px"></div>
+              <div style="flex:1;height:62%;background:#93c5fd;border-radius:6px"></div>
+              <div style="flex:1;height:80%;background:#60a5fa;border-radius:6px"></div>
+              <div style="flex:1;height:100%;background:#2563eb;border-radius:6px"></div>
+              <div style="flex:1;height:74%;background:#60a5fa;border-radius:6px"></div>
+              <div style="flex:1;height:52%;background:#93c5fd;border-radius:6px"></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Top productos</h3>
+            <table>
+              <tr><th>Producto</th><th>Unid.</th><th>Importe</th></tr>
+              <tr><td>Leche entera 1L</td><td>148</td><td>$ 177,60</td></tr>
+              <tr><td>Pan integral</td><td>120</td><td>$ 156,00</td></tr>
+              <tr><td>Arroz 5kg</td><td>86</td><td>$ 430,00</td></tr>
+              <tr><td>Huevos x30</td><td>74</td><td>$ 296,00</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

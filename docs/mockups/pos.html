@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sf-jfx — Mockup: Modo Caja (POS)</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <div class="aviso">Mockup de referencia (no es la app real) — Modo Caja, pantalla completa · F-keys para atajos</div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="marca">sf-jfx</div>
+      <button class="nav activo">Ventas / POS</button>
+      <div class="grupo">Turno</div>
+      <button class="nav">Apertura de caja</button>
+      <button class="nav">Cierre / arqueo</button>
+      <div class="grupo">Operacion</div>
+      <button class="nav">Clientes</button>
+      <button class="nav">Ventas aparcadas</button>
+    </aside>
+
+    <div class="main">
+      <div class="cabecera">
+        <span class="empresa">Caja 1</span>
+        <span class="pill">Matriz Quito</span>
+        <span class="pill" style="color:#166534;background:#dcfce7;border-color:#bbf7d0">Turno abierto</span>
+        <span class="spacer"></span>
+        <span class="suave">Cajero: Maria Perez</span>
+        <span class="avatar">M</span>
+      </div>
+
+      <div class="contenido">
+        <div class="pos">
+          <!-- Productos -->
+          <div>
+            <input class="buscar" placeholder="Escanee codigo de barras o busque por nombre... (F2)">
+            <div class="grilla-productos">
+              <div class="tile"><div class="nombre">Leche entera 1L</div><div class="precio">$ 1,20</div><div class="cod">EAN 7861000112233</div></div>
+              <div class="tile"><div class="nombre">Pan integral</div><div class="precio">$ 1,30</div><div class="cod">EAN 7861000223344</div></div>
+              <div class="tile"><div class="nombre">Arroz 5kg</div><div class="precio">$ 5,00</div><div class="cod">EAN 7861000334455</div></div>
+              <div class="tile"><div class="nombre">Huevos x30</div><div class="precio">$ 4,00</div><div class="cod">EAN 7861000445566</div></div>
+              <div class="tile"><div class="nombre">Platano (kg)</div><div class="precio">$ 0,80</div><div class="cod">PLU 4011</div></div>
+              <div class="tile"><div class="nombre">Aceite girasol 1L</div><div class="precio">$ 2,75</div><div class="cod">EAN 7861000556677</div></div>
+            </div>
+          </div>
+
+          <!-- Carrito -->
+          <div class="carrito">
+            <div style="padding:12px 14px;border-bottom:1px solid var(--borde);display:flex;justify-content:space-between">
+              <strong>Carrito</strong><span class="badge ok">4 items</span>
+            </div>
+            <div class="items">
+              <table>
+                <tr><th>Producto</th><th>Cant.</th><th>Importe</th></tr>
+                <tr><td>Arroz 5kg</td><td>2</td><td>$ 10,00</td></tr>
+                <tr><td>Leche entera 1L</td><td>3</td><td>$ 3,60</td></tr>
+                <tr><td>Pan integral</td><td>1</td><td>$ 1,30</td></tr>
+                <tr><td>Huevos x30</td><td>1</td><td>$ 4,00</td></tr>
+              </table>
+            </div>
+            <div class="totales">
+              <div class="tot"><span>Subtotal</span><span>$ 18,90</span></div>
+              <div class="tot"><span>Descuento</span><span>-$ 1,00</span></div>
+              <div class="tot"><span>IVA 15%</span><span>$ 2,68</span></div>
+              <div class="tot grande"><span>Total</span><span>$ 20,58</span></div>
+              <div class="acciones">
+                <button class="btn">Aparcar (F8)</button>
+                <button class="btn">Descuento (F6)</button>
+              </div>
+              <button class="btn primario" style="margin-top:8px">Cobrar (F12)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

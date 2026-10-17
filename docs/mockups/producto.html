@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sf-jfx — Mockup: Editor de producto</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <div class="aviso">Mockup de referencia (no es la app real) — sf-jfx</div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="marca">sf-jfx</div>
+      <button class="nav">Inicio</button>
+      <div class="grupo">Catalogo e inventario</div>
+      <button class="nav activo">Productos</button>
+      <button class="nav">Inventario</button>
+      <button class="nav">Bodegas</button>
+      <button class="nav">Listas de precio</button>
+    </aside>
+
+    <div class="main">
+      <div class="cabecera">
+        <span class="empresa">Supermercado Demo</span>
+        <span class="pill">Matriz Quito</span>
+        <span class="spacer"></span>
+        <span class="avatar">A</span>
+      </div>
+
+      <div class="contenido">
+        <h1 class="titulo">Nuevo producto</h1>
+        <p class="sub">SKU se autogenera si se deja vacio</p>
+
+        <div class="tabs">
+          <div class="tab activo">General</div>
+          <div class="tab">Precios</div>
+          <div class="tab">Impuestos</div>
+          <div class="tab">Codigos de barras</div>
+          <div class="tab">Empaques</div>
+          <div class="tab">Imagenes</div>
+          <div class="tab">Atributos</div>
+        </div>
+
+        <div class="grid cols-2">
+          <div class="card">
+            <div class="form-grid">
+              <div>
+                <label>Nombre</label>
+                <input class="input" value="Arroz extra largo 5kg">
+              </div>
+              <div>
+                <label>Codigo (SKU)</label>
+                <input class="input" placeholder="AUTO-000123">
+              </div>
+              <div>
+                <label>Categoria</label>
+                <input class="input" value="Abarrotes / Granos">
+              </div>
+              <div>
+                <label>Marca</label>
+                <input class="input" value="La Preferida">
+              </div>
+              <div>
+                <label>Unidad de venta</label>
+                <input class="input" value="Unidad">
+              </div>
+              <div>
+                <label>Costo</label>
+                <input class="input" value="$ 3,80">
+              </div>
+            </div>
+            <div style="margin-top:14px">
+              <span class="chip">IVA 15%</span>
+              <span class="chip">Perecedero: no</span>
+              <span class="chip">Granel: no</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Imagen principal</h3>
+            <div class="foto">Arrastre una foto o haga clic para subir</div>
+            <h3 style="margin-top:16px">Precios por lista</h3>
+            <table>
+              <tr><th>Lista</th><th>Precio</th></tr>
+              <tr><td>Publico</td><td>$ 5,00</td></tr>
+              <tr><td>Mayorista</td><td>$ 4,50</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="acciones" style="max-width:360px;margin-top:16px">
+          <button class="btn">Cancelar</button>
+          <button class="btn primario">Guardar producto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
