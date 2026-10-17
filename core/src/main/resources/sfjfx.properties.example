@@ -10,3 +10,10 @@ db.esquema=public
 
 # --- Aplicacion ---
 app.entorno=dev
+
+# --- Respaldos (opcional; se pueden configurar desde la UI) ---
+# respaldo.directorio=~/.sfjfx/respaldos
+# respaldo.programado=false
+# respaldo.hora=23:00
+# respaldo.pg_dump=pg_dump
+# respaldo.pg_restore=pg_restore
