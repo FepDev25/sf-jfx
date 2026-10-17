@@ -12,10 +12,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -69,6 +72,29 @@ public final class MigradorEsquema {
             }
         }
         return versiones;
+    }
+
+    /** Estado completo: migraciones disponibles, aplicadas y pendientes. */
+    public List<MigracionInfo> estado() throws SQLException, IOException {
+        crearTablaControl();
+        Map<String, LocalDateTime> aplicadas = new HashMap<>();
+        try (Statement st = conexion.createStatement();
+             ResultSet rs = st.executeQuery(
+                     "SELECT version, aplicada_en FROM " + TABLA_CONTROL)) {
+            while (rs.next()) {
+                aplicadas.put(rs.getString("version"), rs.getObject("aplicada_en", LocalDateTime.class));
+            }
+        }
+
+        List<RecursoMigracion> recursos = new ArrayList<>(descubrirRecursos());
+        recursos.sort(Comparator.comparing(RecursoMigracion::version, MigradorEsquema::compararVersiones));
+        List<MigracionInfo> resultado = new ArrayList<>();
+        for (RecursoMigracion recurso : recursos) {
+            LocalDateTime aplicadaEn = aplicadas.get(recurso.version());
+            resultado.add(new MigracionInfo(recurso.version(), recurso.descripcion(),
+                    aplicadaEn != null, aplicadaEn));
+        }
+        return resultado;
     }
 
     private void crearTablaControl() throws SQLException {
