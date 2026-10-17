@@ -1,7 +1,6 @@
 package ec.sfjfx.core.servicio;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -79,22 +78,7 @@ public final class ServicioPromocion {
     }
 
     private BigDecimal calcular(Promocion p, BigDecimal cantidad, BigDecimal precioUnitario) {
-        BigDecimal base = cantidad.multiply(precioUnitario);
-        return switch (p.tipo()) {
-            case "PORCENTAJE" -> base.multiply(nz(p.valor())).divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-            case "MONTO" -> nz(p.valor()).min(base);
-            case "PRECIO_FIJO" -> {
-                BigDecimal dif = precioUnitario.subtract(nz(p.valor()));
-                yield dif.signum() > 0 ? dif.multiply(cantidad) : BigDecimal.ZERO;
-            }
-            case "NXM" -> {
-                int req = p.cantidadRequerida() == null ? 1 : p.cantidadRequerida();
-                int pag = p.cantidadPagada() == null ? req : p.cantidadPagada();
-                int gratis = cantidad.intValue() / req * (req - pag);
-                yield precioUnitario.multiply(BigDecimal.valueOf(gratis));
-            }
-            default -> BigDecimal.ZERO;
-        };
+        return CalculadoraPromocion.descuento(p, cantidad, precioUnitario);
     }
 
     private boolean vigente(Promocion p, LocalDate hoy) {
@@ -122,10 +106,6 @@ public final class ServicioPromocion {
             }
         }
         return false;
-    }
-
-    private BigDecimal nz(BigDecimal v) {
-        return v == null ? BigDecimal.ZERO : v;
     }
 
     private long empresa() {

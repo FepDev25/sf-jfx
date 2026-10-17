@@ -1,7 +1,6 @@
 package ec.sfjfx.core.servicio;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -93,7 +92,7 @@ public final class ServicioInventario {
         BigDecimal total = repo.stockTotal(c, productoId);
         BigDecimal promedio = repo.costoPromedio(c, productoId);
         BigDecimal costo = costoUnitario != null ? costoUnitario : promedio;
-        BigDecimal nuevoPromedio = promedioPonderado(total, promedio, cantidad, costo);
+        BigDecimal nuevoPromedio = CalculadoraCosto.promedioPonderado(total, promedio, cantidad, costo);
 
         if (costoUnitario != null && nuevoPromedio.compareTo(promedio) != 0) {
             historial.registrar(c, empresa(), productoId, null, "COSTO", promedio, nuevoPromedio, null, usuario());
@@ -116,17 +115,6 @@ public final class ServicioInventario {
     }
 
     // ------------------------------------------------------------------ helpers
-
-    private BigDecimal promedioPonderado(BigDecimal totalAnterior, BigDecimal promedio, BigDecimal entrada,
-                                         BigDecimal costoEntrada) {
-        BigDecimal totalNuevo = totalAnterior.add(entrada);
-        if (totalNuevo.signum() <= 0) {
-            return costoEntrada;
-        }
-        BigDecimal valorAnterior = totalAnterior.multiply(promedio);
-        BigDecimal valorNuevo = entrada.multiply(costoEntrada);
-        return valorAnterior.add(valorNuevo).divide(totalNuevo, 4, RoundingMode.HALF_UP);
-    }
 
     private void auditar(long productoId, BigDecimal cantidad, String tipo) {
         auditoria.registrar("INVENTARIO", "movimiento", productoId, "CREAR", null,
