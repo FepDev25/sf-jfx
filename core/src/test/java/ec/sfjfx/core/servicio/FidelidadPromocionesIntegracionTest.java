@@ -109,7 +109,7 @@ class FidelidadPromocionesIntegracionTest {
 
         // Venta acumula puntos; canje reduce
         long clienteId = new ServicioCliente().guardar(new Cliente(null, empresa(), "PERSONA_NATURAL", "CEDULA",
-                "1710034065", "Cliente", "Puntos", null, null, null, null, false, BigDecimal.ZERO, 0,
+                "1710034107", "Cliente", "Puntos", null, null, null, null, false, BigDecimal.ZERO, 0,
                 BigDecimal.ZERO, true)).id();
         Caja caja = new CajaRepositorio().porEmpresa(empresa()).get(0);
         SesionCaja sesion = sesiones.sesionAbierta(caja.id());

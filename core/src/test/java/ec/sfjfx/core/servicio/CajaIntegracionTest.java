@@ -18,7 +18,7 @@ import ec.sfjfx.core.db.Bd;
 import ec.sfjfx.core.db.ConexionBD;
 import ec.sfjfx.core.modelo.Caja;
 import ec.sfjfx.core.modelo.SesionCaja;
-import ec.sfjfx.core.repositorio.CajaRepositorio;
+import ec.sfjfx.core.repositorio.SucursalRepositorio;
 import ec.sfjfx.core.seguridad.ServicioAutenticacion;
 import ec.sfjfx.core.seguridad.SesionActual;
 
@@ -37,10 +37,7 @@ class CajaIntegracionTest {
     @Test
     void aperturaCierreYArqueoSinDiferencia() {
         ServicioSesionCaja servicio = new ServicioSesionCaja();
-        Caja caja = new CajaRepositorio().porEmpresa(empresa()).stream()
-                .filter(c -> servicio.sesionAbierta(c.id()) == null)
-                .findFirst().orElse(null);
-        Assumptions.assumeTrue(caja != null, "Todas las cajas tienen sesion abierta");
+        Caja caja = crearCajaTemporal();
 
         long id = servicio.abrir(caja.id(), new BigDecimal("100.00"));
         try {
@@ -69,6 +66,10 @@ class CajaIntegracionTest {
                     ps.setLong(1, id);
                     ps.executeUpdate();
                 }
+                try (var ps = c.prepareStatement("DELETE FROM caja WHERE id = ?")) {
+                    ps.setLong(1, caja.id());
+                    ps.executeUpdate();
+                }
                 return null;
             });
         }
@@ -77,10 +78,7 @@ class CajaIntegracionTest {
     @Test
     void cierreConFaltanteRegistraDiferenciaNegativa() {
         ServicioSesionCaja servicio = new ServicioSesionCaja();
-        Caja caja = new CajaRepositorio().porEmpresa(empresa()).stream()
-                .filter(c -> servicio.sesionAbierta(c.id()) == null)
-                .findFirst().orElse(null);
-        Assumptions.assumeTrue(caja != null, "Todas las cajas tienen sesion abierta");
+        Caja caja = crearCajaTemporal();
 
         long id = servicio.abrir(caja.id(), new BigDecimal("50.00"));
         try {
@@ -96,9 +94,31 @@ class CajaIntegracionTest {
                     ps.setLong(1, id);
                     ps.executeUpdate();
                 }
+                try (var ps = c.prepareStatement("DELETE FROM caja WHERE id = ?")) {
+                    ps.setLong(1, caja.id());
+                    ps.executeUpdate();
+                }
                 return null;
             });
         }
+    }
+
+    private Caja crearCajaTemporal() {
+        long sucursalId = new SucursalRepositorio().porEmpresa(empresa()).get(0).id();
+        return Bd.transaccion(c -> {
+            String codigo = "TEST" + System.currentTimeMillis();
+            try (var ps = c.prepareStatement("INSERT INTO caja (sucursal_id, codigo, nombre) "
+                    + "VALUES (?, ?, ?) RETURNING id, sucursal_id, codigo, nombre, estado, activo")) {
+                ps.setLong(1, sucursalId);
+                ps.setString(2, codigo);
+                ps.setString(3, "Caja temporal " + codigo);
+                try (var rs = ps.executeQuery()) {
+                    rs.next();
+                    return new Caja(rs.getLong("id"), rs.getLong("sucursal_id"), rs.getString("codigo"),
+                            rs.getString("nombre"), rs.getString("estado"), rs.getBoolean("activo"));
+                }
+            }
+        });
     }
 
     private long empresa() {

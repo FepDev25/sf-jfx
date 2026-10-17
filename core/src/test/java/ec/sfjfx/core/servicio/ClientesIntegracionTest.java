@@ -63,7 +63,7 @@ class ClientesIntegracionTest {
         ServicioInventario inventario = new ServicioInventario();
 
         long clienteId = servicioCliente.guardar(new Cliente(null, empresa(), "PERSONA_NATURAL", "CEDULA",
-                "1710034065", "Cliente", "Prueba", null, null, null, null, true, new BigDecimal("1000"), 30,
+                "1710034081", "Cliente", "Prueba", null, null, null, null, true, new BigDecimal("1000"), 30,
                 BigDecimal.ZERO, true)).id();
         long productoId = productos.guardar(new ProductoCompleto(
                 new Producto(null, empresa(), "CLI" + marca, "Producto cliente", null, null, null, null,

@@ -76,8 +76,8 @@ class AdministracionIntegracionTest {
         Path clientesCsv = temp.resolve("clientes.csv");
         Files.writeString(clientesCsv, String.join("\n",
                 String.join(",", TipoImportacion.CLIENTES.cabecera()),
-                "PERSONA_NATURAL,CEDULA,1710034073,Ana,Importada,,ana.import@demo.ec,0999999999,Calle 1,NO,0,0",
-                "PERSONA_NATURAL,CEDULA,1710034073,Duplicada,Importada,,otra@demo.ec,,,NO,0,0",
+                "PERSONA_NATURAL,CEDULA,1710034115,Ana,Importada,,ana.import@demo.ec,0999999999,Calle 1,NO,0,0",
+                "PERSONA_NATURAL,CEDULA,1710034115,Duplicada,Importada,,otra@demo.ec,,,NO,0,0",
                 "PERSONA_NATURAL,CEDULA,,,,,,,NO,0,0") + "\n", StandardCharsets.UTF_8);
 
         ServicioImportacion.Analisis analisis = servicio.analizar(TipoImportacion.CLIENTES, clientesCsv);
@@ -92,23 +92,23 @@ class AdministracionIntegracionTest {
         Path proveedoresCsv = temp.resolve("proveedores.csv");
         Files.writeString(proveedoresCsv, String.join("\n",
                 String.join(",", TipoImportacion.PROVEEDORES.cabecera()),
-                "CEDULA,1710034073,Proveedor Importado,Proveedor,Av. Demo,0999999999,prov@demo.ec,"
+                "CEDULA,1710034115,Proveedor Importado,Proveedor,Av. Demo,0999999999,prov@demo.ec,"
                         + "CONTRIBUYENTE_GENERAL,30,SI,NO,") + "\n", StandardCharsets.UTF_8);
         ServicioImportacion.Resultado proveedores = servicio.importar(TipoImportacion.PROVEEDORES, proveedoresCsv);
         assertEquals(1, proveedores.creados());
         try {
             assertNotNull(new ServicioCliente().listar("Importada").stream()
-                    .filter(c -> "1710034073".equals(c.numeroIdentificacion())).findFirst().orElse(null));
+                    .filter(c -> "1710034115".equals(c.numeroIdentificacion())).findFirst().orElse(null));
             assertNotNull(new ServicioProveedor().listar("Proveedor Importado").stream()
-                    .filter(p -> "1710034073".equals(p.numeroIdentificacion())).findFirst().orElse(null));
+                    .filter(p -> "1710034115".equals(p.numeroIdentificacion())).findFirst().orElse(null));
         } finally {
             Bd.transaccion(c -> {
                 try (var ps = c.prepareStatement("DELETE FROM cliente WHERE numero_identificacion = ?")) {
-                    ps.setString(1, "1710034073");
+                    ps.setString(1, "1710034115");
                     ps.executeUpdate();
                 }
                 try (var ps = c.prepareStatement("DELETE FROM proveedor WHERE numero_identificacion = ?")) {
-                    ps.setString(1, "1710034073");
+                    ps.setString(1, "1710034115");
                     ps.executeUpdate();
                 }
                 return null;
