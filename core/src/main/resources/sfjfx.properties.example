@@ -1,0 +1,12 @@
+# Configuracion de sf-jfx
+# Copiar a ~/.sfjfx/sfjfx.properties  (o apuntar SFJFX_CONFIG a este archivo)
+# y ajustar los valores.
+
+# --- Base de datos ---
+db.url=jdbc:postgresql://localhost:5432/sfjfx
+db.usuario=sfjfx
+db.password=sfjfx
+db.esquema=public
+
+# --- Aplicacion ---
+app.entorno=dev
