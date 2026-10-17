@@ -17,6 +17,7 @@ import ec.sfjfx.core.modelo.Venta;
 import ec.sfjfx.core.modelo.VentaDetalle;
 import ec.sfjfx.core.modelo.VentaPago;
 import ec.sfjfx.core.repositorio.MedioPagoRepositorio;
+import ec.sfjfx.core.repositorio.Pagina;
 import ec.sfjfx.core.seguridad.SesionActual;
 import ec.sfjfx.core.servicio.ServicioAutorizacion;
 import ec.sfjfx.core.servicio.ServicioSesionCaja;
@@ -32,7 +33,6 @@ import ec.sfjfx.ui.util.Fx;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -53,18 +53,22 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 /** Modo Caja (POS): carrito, cobro con pago mixto, apartado y descuentos. */
 public final class VistaPos extends BorderPane {
 
+    private static final int TAMANO_CATALOGO = 50;
+
     private final ServicioVenta ventas = new ServicioVenta();
+    private final ServicioProducto productos = new ServicioProducto();
     private final ServicioSesionCaja servicioCaja = new ServicioSesionCaja();
     private final ServicioPromocion promociones = new ServicioPromocion();
     private final ServicioCupon cupones = new ServicioCupon();
     private final long empresaId = SesionActual.requerida().empresa().id();
 
     private final ObservableList<Producto> catalogo = FXCollections.observableArrayList();
-    private final FilteredList<Producto> catalogoFiltrado = new FilteredList<>(catalogo, p -> true);
     private final ObservableList<LineaCarrito> carrito = FXCollections.observableArrayList();
     private final Map<Long, BigDecimal> precios = new HashMap<>();
     private final Map<Long, Long> impuestoPorProducto = new HashMap<>();
@@ -79,11 +83,16 @@ public final class VistaPos extends BorderPane {
 
     private final Label etiquetaSesion = new Label();
     private final TextField busqueda = new TextField();
-    private final ListView<Producto> listaProductos = new ListView<>(catalogoFiltrado);
+    private final ListView<Producto> listaProductos = new ListView<>(catalogo);
+    private final Label etiquetaPaginaCatalogo = new Label();
+    private final Button anteriorCatalogo = new Button("Anterior");
+    private final Button siguienteCatalogo = new Button("Siguiente");
+    private final PauseTransition esperaBusqueda = new PauseTransition(Duration.millis(250));
     private final TextField descuentoGlobal = Fx.campo("0");
     private final TextField propina = Fx.campo("0");
     private final Label etiquetaTotales = new Label("$ 0.00");
     private final Label etiquetaDetalle = new Label("Subtotal $0.00 · IVA $0.00");
+    private int paginaCatalogo = 1;
 
     public VistaPos() {
         getStyleClass().add("contenido");
@@ -95,17 +104,45 @@ public final class VistaPos extends BorderPane {
     }
 
     private void cargarDatos() {
-        catalogo.setAll(new ServicioProducto().listar(null));
         lista = ventas.listaPrecioDefault().orElse(null);
         if (lista != null) {
             precios.putAll(ventas.mapaPrecios(lista.id()));
         }
-        impuestoPorProducto.putAll(new ServicioProducto().listar(null).isEmpty()
-                ? Map.of() : impuestoIva());
+        impuestoPorProducto.putAll(impuestoIva());
         for (Impuesto i : new ServicioImpuesto().listar()) {
             porcentajeImpuesto.put(i.id(), i.porcentaje());
         }
         bodegaVenta = Combos.bodegaVenta();
+        cargarPaginaCatalogo(1);
+    }
+
+    private void cargarPaginaCatalogo(int pagina) {
+        Pagina<Producto> resultado = productos.pagina(Fx.texto(busqueda), pagina, TAMANO_CATALOGO);
+        catalogo.setAll(resultado.items());
+        paginaCatalogo = resultado.pagina();
+        etiquetaPaginaCatalogo.setText(resultado.pagina() + " / " + resultado.totalPaginas()
+                + "  ·  " + resultado.total() + " productos");
+        anteriorCatalogo.setDisable(!resultado.hayAnterior());
+        siguienteCatalogo.setDisable(!resultado.haySiguiente());
+    }
+
+    private HBox construirPaginadorCatalogo() {
+        anteriorCatalogo.getStyleClass().add("boton-secundario");
+        siguienteCatalogo.getStyleClass().add("boton-secundario");
+        anteriorCatalogo.setAccessibleText("Pagina anterior de productos");
+        siguienteCatalogo.setAccessibleText("Pagina siguiente de productos");
+        etiquetaPaginaCatalogo.getStyleClass().add("texto-suave");
+        anteriorCatalogo.setOnAction(e -> {
+            if (paginaCatalogo > 1) {
+                cargarPaginaCatalogo(paginaCatalogo - 1);
+            }
+        });
+        siguienteCatalogo.setOnAction(e -> cargarPaginaCatalogo(paginaCatalogo + 1));
+        Region espacio = new Region();
+        HBox.setHgrow(espacio, Priority.ALWAYS);
+        HBox caja = new HBox(6, etiquetaPaginaCatalogo, espacio, anteriorCatalogo, siguienteCatalogo);
+        caja.setAlignment(Pos.CENTER_LEFT);
+        return caja;
     }
 
     private Map<Long, Long> impuestoIva() {
@@ -117,10 +154,13 @@ public final class VistaPos extends BorderPane {
         busqueda.setPromptText("Escanee codigo de barras o busque por nombre... (F2)");
         busqueda.getStyleClass().add("campo");
         busqueda.setPrefWidth(340);
-        busqueda.textProperty().addListener((o, a, b) -> catalogoFiltrado
-                .setPredicate(p -> b == null || b.isBlank() || p.nombre().toLowerCase().contains(b.toLowerCase())
-                        || p.codigo().toLowerCase().contains(b.toLowerCase())));
-        busqueda.setOnAction(e -> agregarPrimero());
+        esperaBusqueda.setOnFinished(e -> cargarPaginaCatalogo(1));
+        busqueda.textProperty().addListener((o, a, b) -> esperaBusqueda.playFromStart());
+        busqueda.setOnAction(e -> {
+            esperaBusqueda.stop();
+            cargarPaginaCatalogo(1);
+            agregarPrimero();
+        });
 
         Button abrirCaja = new Button("Abrir caja");
         abrirCaja.getStyleClass().add("boton-secundario");
@@ -156,8 +196,10 @@ public final class VistaPos extends BorderPane {
             }
         });
 
-        VBox panelCatalogo = new VBox(8, new Label("Catalogo"), listaProductos);
+        VBox panelCatalogo = new VBox(8, new Label("Catalogo"), listaProductos,
+                construirPaginadorCatalogo());
         panelCatalogo.setPadding(new Insets(10));
+        panelCatalogo.setMinWidth(280);
         VBox.setVgrow(listaProductos, Priority.ALWAYS);
 
         TableView<LineaCarrito> tabla = new TableView<>(carrito);
@@ -190,11 +232,11 @@ public final class VistaPos extends BorderPane {
         quitar.getStyleClass().add("boton-secundario");
         mas.setOnAction(e -> cambiarCantidad(tabla, BigDecimal.ONE));
         menos.setOnAction(e -> cambiarCantidad(tabla, BigDecimal.ONE.negate()));
-        quitar.setOnAction(e -> {
-            LineaCarrito l = tabla.getSelectionModel().getSelectedItem();
-            if (l != null) {
-                carrito.remove(l);
-                actualizarTotales();
+        quitar.setOnAction(e -> quitarLinea(tabla));
+        tabla.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.DELETE) {
+                quitarLinea(tabla);
+                e.consume();
             }
         });
         Button descuentoLinea = new Button("Descuento linea");
@@ -205,11 +247,20 @@ public final class VistaPos extends BorderPane {
 
         VBox panelCarrito = new VBox(8, new Label("Carrito"), tabla, accionesLinea, constructorTotales());
         panelCarrito.setPadding(new Insets(10));
+        panelCarrito.setMinWidth(420);
         VBox.setVgrow(panelCarrito, Priority.ALWAYS);
 
         SplitPane split = new SplitPane(panelCatalogo, panelCarrito);
-        split.setDividerPositions(0.55);
+        split.setDividerPositions(0.40);
         return split;
+    }
+
+    private void quitarLinea(TableView<LineaCarrito> tabla) {
+        LineaCarrito linea = tabla.getSelectionModel().getSelectedItem();
+        if (linea != null) {
+            carrito.remove(linea);
+            actualizarTotales();
+        }
     }
 
     private Region constructorTotales() {
@@ -310,12 +361,12 @@ public final class VistaPos extends BorderPane {
     // ------------------------------------------------------------------ operaciones
 
     private void agregarPrimero() {
-        if (catalogoFiltrado.isEmpty()) {
+        if (catalogo.isEmpty()) {
             return;
         }
-        Producto exacto = catalogoFiltrado.stream()
+        Producto exacto = catalogo.stream()
                 .filter(p -> p.codigo().equalsIgnoreCase(Fx.texto(busqueda)))
-                .findFirst().orElse(catalogoFiltrado.get(0));
+                .findFirst().orElse(catalogo.get(0));
         agregar(exacto);
         busqueda.clear();
     }
