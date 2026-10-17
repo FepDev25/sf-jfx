@@ -2,6 +2,7 @@ package ec.sfjfx.ui.componentes;
 
 import ec.sfjfx.ui.util.Alertas;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
@@ -25,6 +26,7 @@ public final class DialogoFormulario {
     private final VBox raiz = new VBox(12, grilla);
     private Runnable alGuardar = () -> { };
     private int fila = 0;
+    private Node primerCampo;
 
     public DialogoFormulario(String titulo, Window propietario) {
         dialogo.setTitle(titulo);
@@ -52,6 +54,11 @@ public final class DialogoFormulario {
         scroll.setStyle("-fx-background-color: transparent;");
         dialogo.getDialogPane().setContent(scroll);
         dialogo.getDialogPane().setPrefWidth(560);
+        dialogo.setOnShown(e -> {
+            if (primerCampo != null) {
+                Platform.runLater(primerCampo::requestFocus);
+            }
+        });
 
         Button botonGuardar = (Button) dialogo.getDialogPane().lookupButton(guardar);
         botonGuardar.addEventFilter(ActionEvent.ACTION, evento -> {
@@ -67,16 +74,25 @@ public final class DialogoFormulario {
     public DialogoFormulario agregar(String etiqueta, Node control) {
         Label label = new Label(etiqueta);
         label.getStyleClass().add("etiqueta-form");
+        label.setLabelFor(control);
         grilla.add(label, 0, fila);
         grilla.add(control, 1, fila);
+        recordarPrimerCampo(control);
         fila++;
         return this;
     }
 
     public DialogoFormulario agregarAnchoCompleto(Node control) {
         grilla.add(control, 0, fila, 2, 1);
+        recordarPrimerCampo(control);
         fila++;
         return this;
+    }
+
+    private void recordarPrimerCampo(Node control) {
+        if (primerCampo == null) {
+            primerCampo = control;
+        }
     }
 
     public DialogoFormulario alGuardar(Runnable accion) {
