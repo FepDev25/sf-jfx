@@ -21,6 +21,16 @@ public final class Alertas {
         mostrar(AlertType.WARNING, titulo, mensaje);
     }
 
+    public static boolean confirmar(String titulo, String mensaje) {
+        Alert alerta = new Alert(AlertType.CONFIRMATION, mensaje,
+                javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        return alerta.showAndWait()
+                .map(boton -> boton == javafx.scene.control.ButtonType.OK)
+                .orElse(false);
+    }
+
     private static void mostrar(AlertType tipo, String titulo, String mensaje) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
