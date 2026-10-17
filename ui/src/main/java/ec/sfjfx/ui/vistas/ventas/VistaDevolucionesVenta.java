@@ -13,6 +13,7 @@ import ec.sfjfx.core.modelo.VentaDetalle;
 import ec.sfjfx.core.servicio.ServicioDevolucionVenta;
 import ec.sfjfx.core.servicio.ServicioVenta;
 import ec.sfjfx.ui.componentes.DialogoFormulario;
+import ec.sfjfx.core.reporte.FormatoReporte;
 import ec.sfjfx.ui.componentes.VistaLista;
 import ec.sfjfx.ui.util.Fx;
 import ec.sfjfx.ui.util.Perm;
@@ -38,7 +39,7 @@ public final class VistaDevolucionesVenta extends VistaLista<DevolucionVenta> {
         columna("Venta", 150, DevolucionVenta::ventaNumero);
         columna("Fecha", 150, d -> d.fecha() == null ? "" : d.fecha().format(FORMATO));
         columna("Motivo", 160, DevolucionVenta::motivo);
-        columna("Total", 110, d -> d.total() == null ? "" : d.total().toPlainString());
+        columna("Total", 110, d -> d.total() == null ? "" : FormatoReporte.moneda(d.total()));
         columna("Estado", 100, DevolucionVenta::estado);
         buscarPor(d -> d.numero() + " " + d.ventaNumero());
         proveedor(servicio::listar);

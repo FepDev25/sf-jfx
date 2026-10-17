@@ -8,6 +8,7 @@ import ec.sfjfx.core.modelo.CxcMovimiento;
 import ec.sfjfx.core.repositorio.MedioPagoRepositorio;
 import ec.sfjfx.core.servicio.ServicioCxc;
 import ec.sfjfx.ui.componentes.DialogoFormulario;
+import ec.sfjfx.core.reporte.FormatoReporte;
 import ec.sfjfx.ui.componentes.VistaLista;
 import ec.sfjfx.ui.util.Alertas;
 import ec.sfjfx.ui.util.Fx;
@@ -28,8 +29,8 @@ public final class VistaCxc extends VistaLista<Cliente> {
     public VistaCxc() {
         super("Cuentas por cobrar");
         columna("Cliente", 300, Cliente::nombreParaMostrar);
-        columna("Limite credito", 130, c -> c.limiteCredito() == null ? "" : c.limiteCredito().toPlainString());
-        columna("Saldo por cobrar", 150, c -> c.saldo() == null ? "" : c.saldo().toPlainString());
+        columna("Limite credito", 130, c -> c.limiteCredito() == null ? "" : FormatoReporte.moneda(c.limiteCredito()));
+        columna("Saldo por cobrar", 150, c -> c.saldo() == null ? "" : FormatoReporte.moneda(c.saldo()));
         buscarPor(Cliente::nombreParaMostrar);
         proveedor(servicio::conSaldo);
 

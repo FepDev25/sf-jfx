@@ -7,6 +7,7 @@ import ec.sfjfx.core.modelo.Bodega;
 import ec.sfjfx.core.modelo.Venta;
 import ec.sfjfx.core.modelo.VentaDetalle;
 import ec.sfjfx.core.servicio.ServicioVenta;
+import ec.sfjfx.core.reporte.FormatoReporte;
 import ec.sfjfx.ui.componentes.VistaLista;
 import ec.sfjfx.ui.util.Alertas;
 import ec.sfjfx.ui.util.Perm;
@@ -23,10 +24,10 @@ public final class VistaVentasConsulta extends VistaLista<Venta> {
         columna("Numero", 160, Venta::numero);
         columna("Fecha", 150, v -> v.fecha() == null ? "" : v.fecha().format(FORMATO));
         columna("Cliente", 180, v -> v.clienteNombre() == null ? "Consumidor final" : v.clienteNombre());
-        columna("Total", 110, v -> v.total() == null ? "" : v.total().toPlainString());
+        columna("Total", 110, v -> v.total() == null ? "" : FormatoReporte.moneda(v.total()));
         columna("Estado", 110, Venta::estado);
         buscarPor(v -> v.numero() + " " + (v.clienteNombre() == null ? "" : v.clienteNombre()));
-        proveedor(() -> servicio.listar(null));
+        proveedorPaginado(servicio::pagina);
 
         accion("Ver", false, v -> v.seleccion().ifPresent(this::ver));
         if (Perm.tiene("pos.anular")) {

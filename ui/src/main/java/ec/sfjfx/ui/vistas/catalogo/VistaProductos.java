@@ -13,6 +13,7 @@ import ec.sfjfx.core.seguridad.SesionActual;
 import ec.sfjfx.core.servicio.ServicioCatalogoCsv;
 import ec.sfjfx.core.servicio.ServicioEtiquetas;
 import ec.sfjfx.core.servicio.ServicioProducto;
+import ec.sfjfx.core.reporte.FormatoReporte;
 import ec.sfjfx.ui.componentes.VistaLista;
 import ec.sfjfx.ui.util.Alertas;
 import ec.sfjfx.ui.util.Fx;
@@ -43,11 +44,11 @@ public final class VistaProductos extends VistaLista<Producto> {
         columna("Codigo", 130, Producto::codigo);
         columna("Nombre", 300, Producto::nombre);
         columna("Tipo", 150, p -> p.tipo().etiqueta());
-        columna("Costo", 100, p -> p.costo() == null ? "" : p.costo().toPlainString());
-        columna("Costo PPP", 110, p -> p.costoPromedio() == null ? "" : p.costoPromedio().toPlainString());
+        columna("Costo", 100, p -> p.costo() == null ? "" : FormatoReporte.moneda(p.costo()));
+        columna("Costo PPP", 110, p -> p.costoPromedio() == null ? "" : FormatoReporte.moneda(p.costoPromedio()));
         columna("Activo", 70, p -> Fx.siNo(p.activo()));
         buscarPor(p -> p.codigo() + " " + p.nombre());
-        proveedor(() -> servicio.listar(null));
+        proveedorPaginado(servicio::pagina);
 
         if (Perm.tiene("productos.crear")) {
             accion("Nuevo", true, v -> nuevoProducto());

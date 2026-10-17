@@ -15,6 +15,7 @@ import ec.sfjfx.core.servicio.ServicioDevolucionVenta;
 import ec.sfjfx.core.servicio.ServicioRetencion;
 import ec.sfjfx.core.servicio.ServicioVenta;
 import ec.sfjfx.ui.componentes.DialogoFormulario;
+import ec.sfjfx.core.reporte.FormatoReporte;
 import ec.sfjfx.ui.componentes.VistaLista;
 import ec.sfjfx.ui.util.Alertas;
 import ec.sfjfx.ui.util.Fx;
@@ -35,10 +36,10 @@ public final class VistaComprobantes extends VistaLista<Comprobante> {
         columna("Tipo", 150, c -> c.tipo());
         columna("Fecha", 110, c -> c.fechaEmision() == null ? "" : c.fechaEmision().toString());
         columna("Receptor", 240, c -> c.receptorRazonSocial());
-        columna("Total", 110, c -> c.total() == null ? "" : c.total().toPlainString());
+        columna("Total", 110, c -> c.total() == null ? "" : FormatoReporte.moneda(c.total()));
         columna("Estado", 100, Comprobante::estado);
         buscarPor(c -> c.numeroCompleto() + " " + c.receptorRazonSocial() + " " + c.claveAcceso());
-        proveedor(() -> servicio.listar(null));
+        proveedorPaginado(servicio::pagina);
 
         if (Perm.tiene("facturacion.crear")) {
             accion("Factura de venta", true, v -> emitirFactura());

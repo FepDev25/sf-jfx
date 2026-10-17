@@ -7,6 +7,7 @@ import ec.sfjfx.core.modelo.ClienteDireccion;
 import ec.sfjfx.core.seguridad.SesionActual;
 import ec.sfjfx.core.servicio.ServicioCliente;
 import ec.sfjfx.ui.componentes.DialogoFormulario;
+import ec.sfjfx.core.reporte.FormatoReporte;
 import ec.sfjfx.ui.componentes.VistaLista;
 import ec.sfjfx.ui.util.Fx;
 import ec.sfjfx.ui.util.Perm;
@@ -38,11 +39,11 @@ public final class VistaClientes extends VistaLista<Cliente> {
         columna("Identificacion", 140, Cliente::numeroIdentificacion);
         columna("Telefono", 130, Cliente::telefono);
         columna("Credito", 90, c -> Fx.siNo(c.esCredito()));
-        columna("Limite", 100, c -> c.limiteCredito() == null ? "" : c.limiteCredito().toPlainString());
-        columna("Saldo", 100, c -> c.saldo() == null ? "" : c.saldo().toPlainString());
+        columna("Limite", 100, c -> c.limiteCredito() == null ? "" : FormatoReporte.moneda(c.limiteCredito()));
+        columna("Saldo", 100, c -> c.saldo() == null ? "" : FormatoReporte.moneda(c.saldo()));
         columna("Activo", 70, c -> Fx.siNo(c.activo()));
         buscarPor(c -> c.nombreParaMostrar() + " " + c.numeroIdentificacion());
-        proveedor(() -> servicio.listar(null));
+        proveedorPaginado(servicio::pagina);
 
         if (Perm.tiene("clientes.crear")) {
             accion("Nuevo", true, v -> abrirFormulario(null));

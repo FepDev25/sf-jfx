@@ -21,6 +21,7 @@ import ec.sfjfx.core.servicio.ServicioProducto;
 import ec.sfjfx.core.servicio.ServicioSesionCaja;
 import ec.sfjfx.core.servicio.ServicioVenta;
 import ec.sfjfx.ui.componentes.DialogoFormulario;
+import ec.sfjfx.core.reporte.FormatoReporte;
 import ec.sfjfx.ui.componentes.VistaLista;
 import ec.sfjfx.ui.util.Alertas;
 import ec.sfjfx.ui.util.Fx;
@@ -53,7 +54,7 @@ public final class VistaPedidos extends VistaLista<Pedido> {
         columna("Cliente", 220, Pedido::clienteNombre);
         columna("Entrega", 110, Pedido::tipoEntrega);
         columna("Estado", 140, Pedido::estado);
-        columna("Total", 110, p -> p.total() == null ? "" : p.total().toPlainString());
+        columna("Total", 110, p -> p.total() == null ? "" : FormatoReporte.moneda(p.total()));
         columna("Venta", 140, p -> p.ventaNumero() == null ? "-" : p.ventaNumero());
         buscarPor(p -> p.numero() + " " + (p.clienteNombre() == null ? "" : p.clienteNombre()));
         proveedor(() -> servicio.listar(null));

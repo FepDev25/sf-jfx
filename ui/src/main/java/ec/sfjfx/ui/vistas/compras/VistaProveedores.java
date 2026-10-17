@@ -43,7 +43,7 @@ public final class VistaProveedores extends VistaLista<Proveedor> {
         columna("Ret. Renta", 90, p -> Fx.siNo(p.aplicaRetencionRenta()));
         columna("Activo", 70, p -> Fx.siNo(p.activo()));
         buscarPor(p -> p.razonSocial() + " " + p.numeroIdentificacion());
-        proveedor(() -> servicio.listar(null));
+        proveedorPaginado(servicio::pagina);
 
         if (Perm.tiene("proveedores.crear")) {
             accion("Nuevo", true, v -> abrirFormulario(null));
