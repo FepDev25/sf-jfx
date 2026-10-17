@@ -153,7 +153,7 @@ Estados: `DECIDIDO` · `PENDIENTE` · `REEVALUABLE`
 | 12.1 | Gestión en UI: **empresa/sucursales/bodegas, feature flags y perfiles, parámetros del negocio** | DECIDIDO | Todo configurable sin tocar BD. |
 | 12.2 | Respaldo: **integrado (pg_dump/pg_restore) con programación y registro** | DECIDIDO | |
 | 12.3 | Esquema: **migraciones versionadas automáticas al iniciar** | DECIDIDO | Control de versión de esquema en BD. |
-| 12.4 | Carga masiva: **importar y exportar catálogo, clientes y proveedores (CSV/Excel)** | DECIDIDO | Con vista previa y validación. |
+| 12.4 | Carga masiva: **importar y exportar catálogo, clientes y proveedores (CSV/Excel)** | DECIDIDO | Con vista previa y validación. Catálogo y terceros aceptan CSV/XLSX. |
 | 12.5 | Dispositivos: **impresora térmica 80mm, A4, lector de barras (HID), balanza y gaveta de efectivo** | DECIDIDO | Todo soportado en software; sin hardware inicial para lector/balanza/A4/gaveta. |
 
 ## Fase 13 — Vistas de UI y dirección de arte

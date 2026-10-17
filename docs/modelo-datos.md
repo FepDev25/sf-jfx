@@ -51,7 +51,7 @@ Motor: **PostgreSQL**. Acceso: **JDBC**.
 `id`, `empresa_id`, `clave` (único por empresa), `valor` (TEXT), `tipo` (TEXTO | NUMERO | BOOLEAN | JSON | FECHA), `grupo`, `descripcion`.
 
 ### `empresa_modulo` (feature flags)
-`id`, `empresa_id`, `modulo_codigo` (PRODUCTOS | INVENTARIO | BODEGAS | POS | FACTURACION | COMPRAS | CLIENTES | FIDELIZACION | PROMOCIONES | LISTAS_PRECIO | GRANEL | REPORTES | AUDITORIA), `activo`. Perfil de instalación en `configuracion`.
+`id`, `empresa_id`, `modulo_codigo` (PRODUCTOS | INVENTARIO | BODEGAS | POS | FACTURACION | COMPRAS | PROVEEDORES | CLIENTES | FIDELIZACION | PROMOCIONES | LISTAS_PRECIO | GRANEL | REPORTES | USUARIOS | AUDITORIA | CONFIGURACION), `activo`. Perfil de instalación en `configuracion` (`empresa.perfil`).
 
 ### `secuencia_documento` (consecutivos SRI)
 `id`, `empresa_id`, `sucursal_id`, `tipo_comprobante`, `establecimiento` (3), `punto_emision` (3), `secuencial_actual` (9), `activo`. Único por (empresa, sucursal, tipo, establecimiento, punto_emision).
@@ -60,7 +60,10 @@ Motor: **PostgreSQL**. Acceso: **JDBC**.
 `id`, `empresa_id`, `sucursal_id`, `caja_id` (nullable), `tipo` (IMPRESORA_TICKET | IMPRESORA_A4 | LECTOR_BARRAS | BALANZA | GAVETA), `nombre`, `configuracion` (JSONB), `activo`.
 
 ### `respaldo`
-`id`, `empresa_id`, `ruta_archivo`, `tamano_bytes`, `tipo` (MANUAL | PROGRAMADO), `estado` (OK | ERROR), `usuario_id`, `creado_en`.
+`id`, `empresa_id`, `ruta_archivo`, `tamano_bytes`, `tipo` (MANUAL | PROGRAMADO), `estado` (OK | ERROR), `usuario_id`, `creado_en`, `detalle` (resultado o error de la ejecución, `V6`).
+
+### `reporte_guardado`
+`id`, `empresa_id`, `usuario_id`, `codigo` (reporte), `nombre`, `desde`, `hasta`, `sucursal_id`, `categoria_id`, `filtro_usuario_id`, `creado_en` (`V5`). Configuraciones reutilizables del visor de reportes.
 
 ### `migracion_esquema`
 `version`, `descripcion`, `aplicada_en`.
@@ -104,6 +107,9 @@ Motor: **PostgreSQL**. Acceso: **JDBC**.
 
 ### `precio_producto`
 `id`, `lista_precio_id`, `producto_id`, `precio` (NUMERIC), `sucursal_id` (nullable, override), `vigente_desde`, `vigente_hasta` (nullable). Único por (lista, producto, sucursal, vigencia).
+
+### `historial_precio` (`V3`)
+`id`, `empresa_id`, `producto_id`, `lista_precio_id` (nullable), `tipo` (PRECIO | COSTO), `valor_anterior`, `valor_nuevo`, `sucursal_id`, `usuario_id`, `creado_en`. Trazabilidad de cambios de precios y costos.
 
 ### `atributo_definicion` (campo personalizado)
 `id`, `empresa_id`, `categoria_id` (nullable), `codigo`, `nombre`, `tipo_dato` (TEXTO | NUMERO | DECIMAL | BOOLEAN | FECHA | LISTA), `opciones` (JSONB), `obligatorio` (bool), `orden`, `activo`.
@@ -228,6 +234,9 @@ Motor: **PostgreSQL**. Acceso: **JDBC**.
 ### `cupon`
 `id`, `empresa_id`, `codigo` (único), `tipo` (PORCENTAJE | MONTO), `valor`, `vigente_desde`, `vigente_hasta`, `usos_maximos`, `usos_actuales`, `activo`.
 
+### `cxc_movimiento` (`V4`)
+`id`, `empresa_id`, `cliente_id`, `venta_id` (nullable), `tipo` (CARGO | ABONO | AJUSTE), `monto`, `saldo_resultante`, `medio_pago_id`, `usuario_id`, `nota`, `creado_en`. Estado de cuenta del cliente; el saldo vigente se mantiene en `cliente.saldo`.
+
 ---
 
 ## 6. Ventas y POS
@@ -307,7 +316,19 @@ Motor: **PostgreSQL**. Acceso: **JDBC**.
 
 ---
 
-## 9. Relación rápida de cardinalidades clave
+## 9. Migraciones y rendimiento
+
+| Versión | Contenido |
+|---------|-----------|
+| `V1` | Esquema inicial completo. |
+| `V2` | Datos base: permisos, roles, unidades, impuestos, medios de pago y tipos de movimiento. |
+| `V3` | `historial_precio`. |
+| `V4` | `cxc_movimiento`. |
+| `V5` | `reporte_guardado`. |
+| `V6` | `respaldo.detalle`. |
+| `V7` | Índices de rendimiento para ventas, inventario, CxC/CxP, comprobantes, auditoría y paginación. |
+
+## 10. Relación rápida de cardinalidades clave
 - Empresa 1—N Sucursal 1—N Bodega; Sucursal 1—N Caja.
 - Producto N—N Impuesto (`producto_impuesto`); Producto N—N Lista (`precio_producto`); Producto N—N Proveedor (`producto_proveedor`).
 - Stock por (Bodega, Producto, Lote). Movimiento inventario es el kardex.

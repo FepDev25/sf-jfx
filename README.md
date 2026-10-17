@@ -21,10 +21,18 @@ sf-jfx/ (parent pom)
 - Maven 3.9+
 - PostgreSQL (cliente/servidor 16+)
 
-## Compilar
+## Módulos funcionales
+
+Organización multiempresa/sucursal, catálogo con variantes/kits, inventario con kardex y PPP,
+compras y cuentas por pagar, ventas/POS/caja con arqueo, clientes y CxC, facturación electrónica
+SRI simulada (XML firmado y RIDE), fidelización/promociones, reportes con exportación y
+administración (dispositivos, respaldos, perfiles, importaciones y migraciones).
+
+## Compilar y probar
 
 ```bash
-mvn clean package
+mvn clean package       # compila y ejecuta las 72 pruebas
+mvn test                # solo pruebas
 ```
 
 ## Ejecutar la UI
@@ -69,15 +77,46 @@ Claves: `db.url`, `db.usuario`, `db.password`, `db.esquema`.
 Orden de búsqueda: `-Dsfjfx.config=<ruta>` → `$SFJFX_CONFIG` →
 `~/.sfjfx/sfjfx.properties` → recurso `/sfjfx.properties` del classpath.
 
-## Migraciones
+## Migraciones y datos de demostración
 
 El esquema se versiona en `core/src/main/resources/db/migracion/` con el formato
 `V<n>__descripcion.sql`. `MigradorEsquema` aplica las pendientes dentro de una
 transacción y registra el historial en la tabla `migracion_esquema`.
 
 ```bash
-mvn -pl core exec:java     # aplica las migraciones pendientes
+mvn -pl core exec:java     # aplica migraciones + semilla base + datos masivos de demo
 ```
+
+La semilla de demostración es idempotente y crea una empresa con dos sucursales, usuarios con
+distintos roles, catálogo, stock/lotes, clientes, proveedores, ventas, comprobantes, compras,
+promociones, cupones, dispositivos y reportes guardados.
+
+Credenciales (password / PIN):
+
+| Usuario | Password | PIN | Rol |
+|---------|----------|-----|-----|
+| `admin` | `admin` | `1234` | Administrador (superadmin) |
+| `gerente` | `gerente123` | `1111` | Gerente |
+| `supervisor` | `supervisor123` | `2222` | Supervisor |
+| `cajero1` | `cajero123` | `3333` | Cajero · Matriz |
+| `cajero2` | `cajero123` | `3333` | Cajero · Norte |
+| `bodeguero` | `bodeguero123` | `4444` | Bodeguero |
+| `contador` | `contador123` | `5555` | Contador |
+| `consulta` | `consulta123` | `6666` | Consulta (solo lectura) |
+
+Ver [`docs/datos-demo.md`](docs/datos-demo.md) para el detalle de los datos, escenarios de
+prueba y cómo reiniciar el entorno.
+
+## Atajos de teclado
+
+- Listados: `F5` actualizar, `Ctrl+F` enfocar búsqueda.
+- POS: `F2` buscar, `F7` nueva venta en paralelo, `F8` aparcar, `F9` venta rápida de un ítem,
+  `F11` pantalla completa, `F12` cobrar.
+
+## Respaldos
+
+Los respaldos usan `pg_dump`/`pg_restore` del cliente PostgreSQL (deben estar en el `PATH`) y se
+configuran desde **Configuración → Respaldos**. El directorio por defecto es `~/.sfjfx/respaldos`.
 
 ## Estado
 
@@ -85,8 +124,7 @@ mvn -pl core exec:java     # aplica las migraciones pendientes
   ventas/POS/caja, clientes/pedidos, facturación SRI (simulada), fidelización/promociones,
   reportes/analítica, administración/operación y **pulido/aseguramiento** (paginación, índices,
   atajos de teclado, accesibilidad y 72 pruebas automatizadas).
-- Base de datos Docker (PostgreSQL 17, puerto 55432): 87 tablas (`V1`–`V7`) + datos base.
-- Usuario demo: `admin` / `admin`.
+- Base de datos Docker (PostgreSQL 17, puerto 55432): 90 tablas (`V1`–`V7`) + datos base y demo.
 - El alcance congelado quedó completo; sigue mantenimiento evolutivo y validación con uso real.
 
 Ver [`docs/`](docs/) para el diseño completo y [`docs/roadmap.md`](docs/roadmap.md) para el avance.

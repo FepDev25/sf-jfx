@@ -11,13 +11,16 @@ Rol que ve cada vista entre paréntesis. `[flag]` = módulo que debe estar activ
 - **Selección de sucursal/caja** — si el usuario tiene varias; elige terminal al abrir turno.
 - **Shell principal** — sidebar colapsable por módulo, barra superior (empresa/sucursal, usuario, hora), área de contenido, notificaciones.
 - **Dashboard** — KPIs (ventas del día, ticket promedio, top productos, alertas de stock/bajo inventario, CxC/CxP), gráficos JavaFX. (Todos, según permisos)
+- **Listados** — paginación en servidor, búsqueda con `Ctrl+F` y actualización con `F5` en productos, ventas, clientes, proveedores y comprobantes; formato monetario unificado.
 - **Bloqueo por inactividad / cierre de sesión**. (Todos)
 - **Centro de notificaciones / alertas** — bajo stock, por vencer, sesiones de caja abiertas, respaldos fallidos. (Admin/Gerente)
 
 ## Modo Caja (POS) — `[POS]`
 - **POS principal** — fullscreen, carrito grande, total visible, teclado, atajos F-keys, búsqueda por nombre/código, escaneo. (Cajero)
 - **Cobro / pagos** — medios múltiples, pago mixto, cálculo de vuelto, referencia de tarjeta, canje de puntos. (Cajero)
-- **Aplicar descuento** — por línea/global, autorización por PIN/permiso. (Cajero/Supervisor)
+- **Aplicar descuento** — por línea (con autorización usuario + PIN) o global. (Cajero/Supervisor)
+- **Venta rápida 1-ítem** — `F9`, cobra el carrito de un solo ítem en efectivo. (Cajero)
+- **Ventas en paralelo** — `F7` aparca la venta actual y abre un carrito nuevo; se retoman con Recuperar. (Cajero)
 - **Ventas aparcadas** — hold y recuperación; múltiples carritos en pestañas. (Cajero)
 - **Devolución en caja** — seleccionar venta/ítems, reintegro, generar nota de crédito. (Supervisor)
 - **Apertura de turno** — monto inicial. (Cajero)
@@ -92,7 +95,9 @@ Rol que ve cada vista entre paréntesis. `[flag]` = módulo que debe estar activ
 - **Empresa / Sucursales** — datos, RUC, régimen, logo. (Admin)
 - **Cajas** — terminales por sucursal. (Admin)
 - **Medios de pago** — catálogo y mapeo SRI. (Admin)
-- **Módulos y perfiles (feature flags)** — activar/desactivar módulos; perfil Supermercado/Minimercado/Tienda. (Admin)
+- **Módulos y perfiles (feature flags)** — activar/desactivar módulos y aplicar perfiles Supermercado/Minimercado/Tienda. (Admin)
+- **Importaciones masivas** — clientes y proveedores desde CSV/XLSX con vista previa, validación y plantillas; catálogo CSV/XLSX desde Productos. (Admin)
+- **Migraciones de esquema** — estado de versiones aplicadas/pendientes y aplicación desde la UI. (Admin)
 - **Dispositivos** — impresoras, lector de barras, balanza. (Admin)
-- **Respaldo/restauración** — pg_dump/pg_restore, programación, historial. (Admin)
+- **Respaldo/restauración** — pg_dump/pg_restore, programación diaria, historial y restauración con confirmación. (Admin)
 - **Migraciones de esquema** — estado de versión de la BD. (Admin)

@@ -45,6 +45,8 @@ sf-jfx (parent pom)
 | 10 | Administración y operación | `HECHO` |
 | 11 | Pulido y aseguramiento | `HECHO` |
 
+**Todos los hitos (0–11) están cerrados.** El sistema está listo para pruebas integrales con los datos de demostración descritos en [`datos-demo.md`](datos-demo.md).
+
 ---
 
 ## Hito 0 — Cimientos `[HECHO]`
@@ -225,13 +227,13 @@ _Paginación en servidor para productos, ventas, clientes, proveedores y comprob
 
 ---
 
-## Orden de mockups (previo a UI por hito)
+## Orden de mockups (previo a UI por hito) `[HECHO]`
 
-- [ ] Shell + Login.
-- [ ] Dashboard.
-- [ ] Modo Caja (POS) + cobro.
-- [ ] Editor de producto.
-- [ ] Listado de productos y de ventas.
+- [x] Shell + Login.
+- [x] Dashboard.
+- [x] Modo Caja (POS) + cobro.
+- [x] Editor de producto.
+- [x] Listado de productos y de ventas.
 
 ---
 

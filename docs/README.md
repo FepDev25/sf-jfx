@@ -8,6 +8,9 @@ Documentación de diseño del sistema de facturación para supermercados.
 | [`modelo-datos.md`](modelo-datos.md) | Entidades y atributos del core, agrupados por módulo. |
 | [`vistas-ui.md`](vistas-ui.md) | Inventario de pantallas necesarias y quién las usa. |
 | [`roadmap.md`](roadmap.md) | Arquitectura de módulos Maven y hitos de construcción (con casillas de avance). |
+| [`datos-demo.md`](datos-demo.md) | Credenciales, contenido de la semilla masiva y escenarios de prueba. |
 | [`mockups/`](mockups/) | Prototipos visuales HTML de las pantallas clave. |
 
 Estado: **Hitos 0 a 11 cerrados**. Alcance congelado completo; sigue mantenimiento evolutivo.
+
+Para probar la aplicación: [`datos-demo.md`](datos-demo.md) (usuarios, datos y reinicio del entorno).
