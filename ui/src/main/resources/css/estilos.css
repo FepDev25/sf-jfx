@@ -1,0 +1,291 @@
+/* sf-jfx - tema (direccion de arte: moderno claro tipo SaaS) */
+
+.root {
+    -sf-bg: #f5f7fb;
+    -sf-surface: #ffffff;
+    -sf-borde: #e3e8ef;
+    -sf-texto: #1f2937;
+    -sf-texto-suave: #6b7280;
+    -sf-primario: #2563eb;
+    -sf-primario-suave: #dbeafe;
+    -sf-hover: #f1f5f9;
+
+    -fx-font-family: "Inter", "Roboto", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-text-fill: -sf-texto;
+    -fx-background-color: -sf-bg;
+}
+
+.raiz {
+    -fx-background-color: -sf-bg;
+}
+
+/* ----- Cabecera ----- */
+.cabecera {
+    -fx-background-color: -sf-surface;
+    -fx-border-color: transparent transparent -sf-borde transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.cabecera-empresa {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.cabecera-usuario {
+    -fx-text-fill: -sf-texto-suave;
+    -fx-padding: 0 6 0 0;
+}
+
+/* ----- Sidebar ----- */
+.sidebar {
+    -fx-background-color: -sf-surface;
+    -fx-border-color: transparent -sf-borde transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar-encabezado {
+    -fx-padding: 18 18 10 18;
+}
+
+.marca {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sf-primario;
+}
+
+.sidebar-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-padding: 0 10 12 10;
+}
+
+.sidebar-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.sidebar-grupo {
+    -fx-font-size: 10px;
+    -fx-text-fill: -sf-texto-suave;
+    -fx-padding: 12 10 4 10;
+}
+
+.sidebar-separador {
+    -fx-min-height: 1;
+    -fx-pref-height: 1;
+    -fx-background-color: -sf-borde;
+    -fx-margin: 6 0 6 0;
+}
+
+.nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: -sf-texto;
+    -fx-font-size: 13px;
+    -fx-padding: 9 12 9 12;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.nav-item:hover {
+    -fx-background-color: -sf-hover;
+}
+
+.nav-item.activo {
+    -fx-background-color: -sf-primario-suave;
+    -fx-text-fill: -sf-primario;
+    -fx-font-weight: bold;
+}
+
+/* ----- Contenido ----- */
+.contenido {
+    -fx-background-color: -sf-bg;
+}
+
+.titulo-vista {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sf-texto;
+}
+
+.texto-suave {
+    -fx-text-fill: -sf-texto-suave;
+}
+
+/* ----- Controles ----- */
+.boton-primario {
+    -fx-background-color: -sf-primario;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 9 16 9 16;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.boton-primario:hover {
+    -fx-background-color: derive(-sf-primario, -8%);
+}
+
+.boton-secundario {
+    -fx-background-color: -sf-surface;
+    -fx-text-fill: -sf-texto;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 7 14 7 14;
+    -fx-cursor: hand;
+}
+
+.boton-secundario:hover {
+    -fx-background-color: -sf-hover;
+}
+
+.campo {
+    -fx-background-color: -sf-surface;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 9 12 9 12;
+}
+
+.campo:focused {
+    -fx-border-color: -sf-primario;
+}
+
+.selector {
+    -fx-background-color: -sf-surface;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+/* ----- Login ----- */
+.login-fondo {
+    -fx-background-color: linear-gradient(to bottom right, #eff4ff, #f8fafc);
+}
+
+.login-tarjeta {
+    -fx-background-color: -sf-surface;
+    -fx-background-radius: 16;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.12), 24, 0, 0, 8);
+}
+
+.login-marca {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sf-primario;
+}
+
+.login-subtitulo {
+    -fx-text-fill: -sf-texto-suave;
+    -fx-padding: 0 0 8 0;
+}
+
+.login-error {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 12px;
+}
+
+/* ----- Formularios y secciones ----- */
+.titulo-seccion {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sf-texto;
+}
+
+.etiqueta-form {
+    -fx-font-size: 12px;
+    -fx-text-fill: -sf-texto-suave;
+    -fx-font-weight: bold;
+}
+
+.table-view {
+    -fx-background-color: -sf-surface;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -sf-hover;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: transparent;
+}
+
+
+/* ----- Dashboard ----- */
+.panel-tarjeta {
+    -fx-background-color: -sf-surface;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 14 16 14 16;
+}
+
+.panel-titulo {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sf-texto;
+}
+
+.kpi-titulo {
+    -fx-font-size: 11px;
+    -fx-text-fill: -sf-texto-suave;
+    -fx-font-weight: bold;
+}
+
+.kpi-valor {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sf-texto;
+}
+
+.kpi-valor-alerta {
+    -fx-text-fill: #dc2626;
+}
+
+.kpi-detalle {
+    -fx-font-size: 11px;
+    -fx-text-fill: -sf-texto-suave;
+}
+
+/* ----- Graficos ----- */
+.grafico-reporte {
+    -fx-background-color: transparent;
+    -fx-padding: 4;
+}
+
+.grafico-reporte .chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.grafico-reporte .chart-title {
+    -fx-font-size: 12px;
+    -fx-text-fill: -sf-texto-suave;
+}
+
+/* ----- Reportes ----- */
+.total-reporte {
+    -fx-font-size: 12px;
+    -fx-text-fill: -sf-texto;
+    -fx-font-weight: bold;
+    -fx-padding: 6 0 0 0;
+}
+
+.list-view {
+    -fx-background-color: -sf-surface;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.date-picker {
+    -fx-background-color: -sf-surface;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
