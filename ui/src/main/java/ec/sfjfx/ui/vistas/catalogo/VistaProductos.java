@@ -58,7 +58,7 @@ public final class VistaProductos extends VistaLista<Producto> {
         }
         accion("Historial", false, v -> v.seleccion().ifPresent(this::verHistorial));
         accion("Etiquetas", false, v -> v.seleccion().ifPresent(this::etiquetas));
-        accion("Importar CSV", false, v -> importar());
+        accion("Importar CSV/Excel", false, v -> importar());
         accion("Exportar CSV", false, v -> exportar());
         onDobleClic(p -> {
             if (Perm.tiene("productos.editar")) {
@@ -147,8 +147,11 @@ public final class VistaProductos extends VistaLista<Producto> {
 
     private void importar() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Importar catalogo CSV");
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
+        chooser.setTitle("Importar catalogo CSV/Excel");
+        chooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("CSV o Excel", "*.csv", "*.xlsx", "*.xls"),
+                new FileChooser.ExtensionFilter("CSV", "*.csv"),
+                new FileChooser.ExtensionFilter("Excel", "*.xlsx", "*.xls"));
         File archivo = chooser.showOpenDialog(ventana());
         if (archivo == null) {
             return;

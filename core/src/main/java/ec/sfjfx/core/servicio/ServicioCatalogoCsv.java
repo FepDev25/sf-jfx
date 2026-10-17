@@ -1,7 +1,6 @@
 package ec.sfjfx.core.servicio;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -25,6 +24,7 @@ import ec.sfjfx.core.modelo.TipoProducto;
 import ec.sfjfx.core.modelo.UnidadMedida;
 import ec.sfjfx.core.seguridad.SesionActual;
 import ec.sfjfx.core.util.Csv;
+import ec.sfjfx.core.util.LectorTabla;
 
 /** Importacion y exportacion de catalogo en CSV. */
 public final class ServicioCatalogoCsv {
@@ -69,10 +69,7 @@ public final class ServicioCatalogoCsv {
     }
 
     public ResultadoImportacion importar(Path origen) throws IOException {
-        List<String[]> filas;
-        try (Reader r = Files.newBufferedReader(origen, StandardCharsets.UTF_8)) {
-            filas = Csv.leer(r);
-        }
+        List<String[]> filas = LectorTabla.leer(origen);
         int creados = 0;
         int omitidos = 0;
         List<String> errores = new ArrayList<>();
