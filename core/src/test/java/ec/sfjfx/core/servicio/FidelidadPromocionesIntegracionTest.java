@@ -90,9 +90,9 @@ class FidelidadPromocionesIntegracionTest {
                 List.of(new AjusteDetalle(null, 0, productoId, null, null, new BigDecimal("20"), new BigDecimal("2.00"))));
 
         // Promocion 10% sobre la categoria
-        promociones.guardar(new Promocion(null, empresa(), "Promo 10%", null, "PORCENTAJE", new BigDecimal("10"),
-                null, null, 5, false, LocalDate.now(), LocalDate.now().plusDays(30), "ACTIVA", true,
-                List.of(new PromocionAlcance(null, 0, "CATEGORIA", categoriaId)), List.of()));
+        long promoId = promociones.guardar(new Promocion(null, empresa(), "Promo 10% " + marca, null, "PORCENTAJE",
+                new BigDecimal("10"), null, null, 5, false, LocalDate.now(), LocalDate.now().plusDays(30),
+                "ACTIVA", true, List.of(new PromocionAlcance(null, 0, "CATEGORIA", categoriaId)), List.of())).id();
         var oferta = promociones.evaluar(productoId, categoriaId, null, new BigDecimal("2"), new BigDecimal("10.00"), null);
         assertTrue(oferta.isPresent());
         assertEquals(0, oferta.get().descuento().compareTo(new BigDecimal("2.00")));
@@ -139,9 +139,9 @@ class FidelidadPromocionesIntegracionTest {
         Bd.transaccion(c -> {
             ejecutar(c, "DELETE FROM puntos_movimiento WHERE cliente_id = ?", clienteId);
             ejecutar(c, "DELETE FROM cliente_puntos WHERE cliente_id = ?", clienteId);
-            ejecutar(c, "DELETE FROM promocion_alcance WHERE promocion_id IN (SELECT id FROM promocion WHERE empresa_id = " + empresa() + ")", -1);
-            ejecutar(c, "DELETE FROM promocion_detalle WHERE promocion_id IN (SELECT id FROM promocion WHERE empresa_id = " + empresa() + ")", -1);
-            ejecutar(c, "DELETE FROM promocion WHERE nombre = 'Promo 10%'", -1);
+            ejecutar(c, "DELETE FROM promocion_alcance WHERE promocion_id = ?", promoId);
+            ejecutar(c, "DELETE FROM promocion_detalle WHERE promocion_id = ?", promoId);
+            ejecutar(c, "DELETE FROM promocion WHERE id = ?", promoId);
             ejecutar(c, "DELETE FROM cupon WHERE id = ?", cuponId);
             ejecutar(c, "DELETE FROM venta_pago WHERE venta_id = ?", ventaId);
             ejecutar(c, "DELETE FROM venta_detalle WHERE venta_id = ?", ventaId);
