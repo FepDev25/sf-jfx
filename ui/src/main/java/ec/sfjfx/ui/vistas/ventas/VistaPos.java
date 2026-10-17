@@ -18,6 +18,7 @@ import ec.sfjfx.core.modelo.VentaDetalle;
 import ec.sfjfx.core.modelo.VentaPago;
 import ec.sfjfx.core.repositorio.MedioPagoRepositorio;
 import ec.sfjfx.core.seguridad.SesionActual;
+import ec.sfjfx.core.servicio.ServicioAutorizacion;
 import ec.sfjfx.core.servicio.ServicioSesionCaja;
 import ec.sfjfx.core.servicio.ServicioImpuesto;
 import ec.sfjfx.core.servicio.ServicioCupon;
@@ -38,6 +39,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -46,6 +48,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -168,10 +171,14 @@ public final class VistaPos extends BorderPane {
         TableColumn<LineaCarrito, String> cPrecio = new TableColumn<>("Precio");
         cPrecio.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>("$ " + c.getValue().precioUnitario().toPlainString()));
         cPrecio.setPrefWidth(80);
+        TableColumn<LineaCarrito, String> cDescuento = new TableColumn<>("Desc.");
+        cDescuento.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(
+                c.getValue().descuento().signum() > 0 ? "$ " + money(c.getValue().descuento()) : ""));
+        cDescuento.setPrefWidth(70);
         TableColumn<LineaCarrito, String> cTotal = new TableColumn<>("Total");
         cTotal.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>("$ " + c.getValue().totalLinea().toPlainString()));
         cTotal.setPrefWidth(80);
-        tabla.getColumns().addAll(cDesc, cCant, cPrecio, cTotal);
+        tabla.getColumns().addAll(cDesc, cCant, cPrecio, cDescuento, cTotal);
         tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         VBox.setVgrow(tabla, Priority.ALWAYS);
 
@@ -190,7 +197,10 @@ public final class VistaPos extends BorderPane {
                 actualizarTotales();
             }
         });
-        HBox accionesLinea = new HBox(6, mas, menos, quitar);
+        Button descuentoLinea = new Button("Descuento linea");
+        descuentoLinea.getStyleClass().add("boton-secundario");
+        descuentoLinea.setOnAction(e -> descuentoLinea(tabla));
+        HBox accionesLinea = new HBox(6, mas, menos, quitar, descuentoLinea);
         accionesLinea.setAlignment(Pos.CENTER_LEFT);
 
         VBox panelCarrito = new VBox(8, new Label("Carrito"), tabla, accionesLinea, constructorTotales());
@@ -229,7 +239,13 @@ public final class VistaPos extends BorderPane {
             ventaAparcadaId = null;
             actualizarTotales();
         });
-        HBox botones = new HBox(8, cobrar, aparcar, recuperar, cancelar);
+        Button rapida = new Button("Rapida (F9)");
+        rapida.getStyleClass().add("boton-secundario");
+        rapida.setOnAction(e -> ventaRapida());
+        Button nueva = new Button("Nueva venta (F7)");
+        nueva.getStyleClass().add("boton-secundario");
+        nueva.setOnAction(e -> nuevaVentaEnParalelo());
+        FlowPane botones = new FlowPane(8, 8, cobrar, rapida, aparcar, recuperar, nueva, cancelar);
         Button promos = new Button("Promociones");
         promos.getStyleClass().add("boton-secundario");
         promos.setOnAction(e -> aplicarPromociones());
@@ -371,11 +387,7 @@ public final class VistaPos extends BorderPane {
         if (pagos == null) {
             return;
         }
-        List<VentaDetalle> lineas = new ArrayList<>();
-        for (LineaCarrito l : carrito) {
-            lineas.add(new VentaDetalle(null, 0, l.productoId(), l.descripcion(), l.cantidad(), l.precioUnitario(),
-                    l.descuento(), l.impuestoId(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
-        }
+        List<VentaDetalle> lineas = lineasVenta();
         try {
             long id = ventas.cobrar(sesion, bodegaVenta.id(), ventaAparcadaId, null, null, incluye, lineas, pagos,
                     decimal(Fx.texto(descuentoGlobal)), decimal(Fx.texto(propina)), null);
@@ -385,11 +397,7 @@ public final class VistaPos extends BorderPane {
                 cupones.usar(cuponId);
                 cuponId = null;
             }
-            carrito.clear();
-            ventaAparcadaId = null;
-            descuentoGlobal.setText("0");
-            propina.setText("0");
-            actualizarTotales();
+            limpiarVenta();
         } catch (RuntimeException e) {
             Alertas.error("No se pudo cobrar", e.getMessage());
         }
@@ -457,20 +465,123 @@ public final class VistaPos extends BorderPane {
         etiqueta.setText("Pagado: $ " + money(suma) + "   Vuelto: $ " + money(suma.subtract(total).max(BigDecimal.ZERO)));
     }
 
-    private void aparcar() {
-        if (carrito.isEmpty()) {
+    private void descuentoLinea(TableView<LineaCarrito> tabla) {
+        LineaCarrito linea = tabla.getSelectionModel().getSelectedItem();
+        if (linea == null) {
+            Alertas.advertencia("Descuento", "Seleccione una linea del carrito.");
             return;
         }
-        boolean incluye = lista != null && lista.incluyeIva();
+        TextField monto = Fx.campo("0");
+        TextField usuario = Fx.campo("");
+        PasswordField pin = Fx.clave();
+        new DialogoFormulario("Descuento por linea", ventana())
+                .agregar("Descuento ($)", monto)
+                .agregar("Autoriza (usuario)", usuario)
+                .agregar("PIN", pin)
+                .alGuardar(() -> {
+                    BigDecimal descuento = decimal(Fx.texto(monto));
+                    if (descuento.signum() <= 0) {
+                        throw new IllegalArgumentException("El descuento debe ser mayor a cero");
+                    }
+                    if (descuento.compareTo(linea.totalLinea()) > 0) {
+                        throw new IllegalArgumentException("El descuento no puede superar el total de la linea");
+                    }
+                    new ServicioAutorizacion().autorizar(Fx.texto(usuario), Fx.texto(pin), "pos.editar");
+                    linea.descuento(linea.descuento().add(descuento));
+                    tabla.refresh();
+                    actualizarTotales();
+                })
+                .mostrar();
+    }
+
+    private void ventaRapida() {
+        if (sesion == null || !sesion.abierta() || bodegaVenta == null) {
+            Alertas.advertencia("Caja cerrada", "Abra la caja antes de vender.");
+            return;
+        }
+        if (carrito.size() != 1) {
+            Alertas.advertencia("Venta rapida", "La venta rapida requiere exactamente un item en el carrito.");
+            return;
+        }
+        BigDecimal total = totalActual();
+        if (total.signum() <= 0) {
+            return;
+        }
+        var medios = new MedioPagoRepositorio().listar();
+        if (medios.isEmpty()) {
+            Alertas.error("Venta rapida", "No hay medios de pago configurados.");
+            return;
+        }
+        var efectivo = medios.stream().filter(m -> "EFECTIVO".equals(m.tipo())).findFirst().orElse(medios.get(0));
+        List<VentaDetalle> lineas = lineasVenta();
+        List<VentaPago> pagos = List.of(new VentaPago(null, 0, efectivo.id(), efectivo.nombre(),
+                total, null, BigDecimal.ZERO));
+        try {
+            long id = ventas.cobrar(sesion, bodegaVenta.id(), ventaAparcadaId, null, "Venta rapida",
+                    lista != null && lista.incluyeIva(), lineas, pagos,
+                    decimal(Fx.texto(descuentoGlobal)), decimal(Fx.texto(propina)), null);
+            if (cuponId != null) {
+                cupones.usar(cuponId);
+                cuponId = null;
+            }
+            Alertas.info("Venta rapida", "Venta " + ventas.porId(id).numero() + " cobrada en efectivo: $ " + money(total));
+            limpiarVenta();
+        } catch (RuntimeException e) {
+            Alertas.error("No se pudo cobrar", e.getMessage());
+        }
+    }
+
+    private void nuevaVentaEnParalelo() {
+        if (carrito.isEmpty()) {
+            Alertas.info("Nueva venta", "El carrito ya esta vacio.");
+            return;
+        }
+        if (!Alertas.confirmar("Nueva venta en paralelo",
+                "Se aparcara la venta actual y se abrira un carrito nuevo. ¿Desea continuar?")) {
+            return;
+        }
+        if (!aparcar()) {
+            return;
+        }
+        limpiarVenta();
+        Alertas.info("Nueva venta", "La venta anterior quedo aparcada. Use Recuperar para retomarla.");
+    }
+
+    private List<VentaDetalle> lineasVenta() {
         List<VentaDetalle> lineas = new ArrayList<>();
         for (LineaCarrito l : carrito) {
             lineas.add(new VentaDetalle(null, 0, l.productoId(), l.descripcion(), l.cantidad(), l.precioUnitario(),
                     l.descuento(), l.impuestoId(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
         }
-        ventas.apartar(sesion, bodegaVenta.id(), null, null, incluye, lineas, decimal(Fx.texto(descuentoGlobal)));
+        return lineas;
+    }
+
+    private void limpiarVenta() {
         carrito.clear();
         ventaAparcadaId = null;
+        descuentoGlobal.setText("0");
+        propina.setText("0");
         actualizarTotales();
+    }
+
+    private boolean aparcar() {
+        if (carrito.isEmpty()) {
+            return false;
+        }
+        if (sesion == null || !sesion.abierta() || bodegaVenta == null) {
+            Alertas.advertencia("Caja cerrada", "Abra la caja antes de aparcar ventas.");
+            return false;
+        }
+        boolean incluye = lista != null && lista.incluyeIva();
+        List<VentaDetalle> lineas = lineasVenta();
+        try {
+            ventas.apartar(sesion, bodegaVenta.id(), null, null, incluye, lineas, decimal(Fx.texto(descuentoGlobal)));
+        } catch (RuntimeException e) {
+            Alertas.error("No se pudo aparcar", e.getMessage());
+            return false;
+        }
+        limpiarVenta();
+        return true;
     }
 
     private void recuperar() {
@@ -553,6 +664,8 @@ public final class VistaPos extends BorderPane {
             escena.getAccelerators().put(new KeyCodeCombination(KeyCode.F2), busqueda::requestFocus);
             escena.getAccelerators().put(new KeyCodeCombination(KeyCode.F12), this::cobrar);
             escena.getAccelerators().put(new KeyCodeCombination(KeyCode.F8), this::aparcar);
+            escena.getAccelerators().put(new KeyCodeCombination(KeyCode.F9), this::ventaRapida);
+            escena.getAccelerators().put(new KeyCodeCombination(KeyCode.F7), this::nuevaVentaEnParalelo);
             escena.getAccelerators().put(new KeyCodeCombination(KeyCode.F11), () -> {
                 if (escena.getWindow() instanceof javafx.stage.Stage escenario) {
                     escenario.setFullScreen(!escenario.isFullScreen());
