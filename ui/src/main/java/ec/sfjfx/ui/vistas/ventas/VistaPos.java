@@ -87,6 +87,7 @@ public final class VistaPos extends BorderPane {
     private final Label etiquetaPaginaCatalogo = new Label();
     private final Button anteriorCatalogo = new Button("Anterior");
     private final Button siguienteCatalogo = new Button("Siguiente");
+    private final TextField cantidadCatalogo = Fx.campo("1");
     private final PauseTransition esperaBusqueda = new PauseTransition(Duration.millis(250));
     private final TextField descuentoGlobal = Fx.campo("0");
     private final TextField propina = Fx.campo("0");
@@ -188,16 +189,15 @@ public final class VistaPos extends BorderPane {
                 }
             }
         });
-        listaProductos.setOnMouseClicked(e -> {
-            if (e.getClickCount() == 1 && listaProductos.getSelectionModel().getSelectedItem() != null) {
-                agregar(listaProductos.getSelectionModel().getSelectedItem());
-                busqueda.clear();
-                listaProductos.getSelectionModel().clearSelection();
+        listaProductos.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ENTER) {
+                agregarSeleccionado();
+                e.consume();
             }
         });
 
         VBox panelCatalogo = new VBox(8, new Label("Catalogo"), listaProductos,
-                construirPaginadorCatalogo());
+                construirAccionesCatalogo(), construirPaginadorCatalogo());
         panelCatalogo.setPadding(new Insets(10));
         panelCatalogo.setMinWidth(280);
         VBox.setVgrow(listaProductos, Priority.ALWAYS);
@@ -253,6 +253,36 @@ public final class VistaPos extends BorderPane {
         SplitPane split = new SplitPane(panelCatalogo, panelCarrito);
         split.setDividerPositions(0.40);
         return split;
+    }
+
+    private HBox construirAccionesCatalogo() {
+        Label etiqueta = new Label("Cantidad:");
+        etiqueta.getStyleClass().add("texto-suave");
+        cantidadCatalogo.setPrefWidth(70);
+        cantidadCatalogo.setAlignment(Pos.CENTER_RIGHT);
+        cantidadCatalogo.setAccessibleText("Cantidad para agregar al carrito");
+        cantidadCatalogo.setOnAction(e -> agregarSeleccionado());
+        Button agregar = new Button("Agregar");
+        agregar.getStyleClass().add("boton-secundario");
+        agregar.setOnAction(e -> agregarSeleccionado());
+        HBox caja = new HBox(8, etiqueta, cantidadCatalogo, agregar);
+        caja.setAlignment(Pos.CENTER_LEFT);
+        return caja;
+    }
+
+    private void agregarSeleccionado() {
+        Producto producto = listaProductos.getSelectionModel().getSelectedItem();
+        if (producto == null) {
+            Alertas.advertencia("Agregar producto", "Seleccione un producto del catalogo.");
+            return;
+        }
+        BigDecimal cantidad = decimal(Fx.texto(cantidadCatalogo));
+        if (cantidad.signum() <= 0) {
+            Alertas.advertencia("Cantidad invalida", "Ingrese una cantidad mayor a cero.");
+            return;
+        }
+        agregar(producto, cantidad);
+        cantidadCatalogo.setText("1");
     }
 
     private void quitarLinea(TableView<LineaCarrito> tabla) {
@@ -372,13 +402,19 @@ public final class VistaPos extends BorderPane {
     }
 
     private void agregar(Producto p) {
+        agregar(p, BigDecimal.ONE);
+    }
+
+    private void agregar(Producto p, BigDecimal cantidad) {
         if (sesion == null || !sesion.abierta()) {
             Alertas.advertencia("Caja cerrada", "Abra la caja antes de vender.");
             return;
         }
+        BigDecimal unidades = cantidad == null || cantidad.signum() <= 0
+                ? BigDecimal.ONE : cantidad;
         carrito.stream().filter(l -> l.productoId().equals(p.id())).findFirst().ifPresentOrElse(
-                l -> l.cantidad(l.cantidad().add(BigDecimal.ONE)),
-                () -> carrito.add(new LineaCarrito(p.id(), p.nombre(), BigDecimal.ONE,
+                l -> l.cantidad(l.cantidad().add(unidades)),
+                () -> carrito.add(new LineaCarrito(p.id(), p.nombre(), unidades,
                         precios.getOrDefault(p.id(), BigDecimal.ZERO), impuestoPorProducto.get(p.id()), BigDecimal.ZERO)));
         actualizarTotales();
     }
