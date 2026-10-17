@@ -16,7 +16,7 @@ Rol que ve cada vista entre paréntesis. `[flag]` = módulo que debe estar activ
 - **Centro de notificaciones / alertas** — bajo stock, por vencer, sesiones de caja abiertas, respaldos fallidos. (Admin/Gerente)
 
 ## Modo Caja (POS) — `[POS]`
-- **POS principal** — fullscreen, carrito grande, total visible, teclado, atajos F-keys, catálogo paginado (50 por página), búsqueda por nombre/código y escaneo. (Cajero)
+- **POS principal** — fullscreen, carrito grande, total visible, teclado, atajos F-keys, catálogo paginado (50 por página), selección + cantidad editable + **Agregar**, búsqueda por nombre/código y escaneo. (Cajero)
 - **Cobro / pagos** — medios múltiples, pago mixto, cálculo de vuelto, referencia de tarjeta, canje de puntos. (Cajero)
 - **Aplicar descuento** — por línea (con autorización usuario + PIN) o global. (Cajero/Supervisor)
 - **Venta rápida 1-ítem** — `F9`, cobra el carrito de un solo ítem en efectivo. (Cajero)

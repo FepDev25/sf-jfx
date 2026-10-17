@@ -109,6 +109,7 @@ prueba y cómo reiniciar el entorno.
 
 ## Atajos de teclado
 
+- POS: seleccione un producto, ajuste la cantidad y use **Agregar**; el escaneo con `Enter` agrega una unidad.
 - Listados: `F5` actualizar, `Ctrl+F` enfocar búsqueda.
 - POS: `F2` buscar, `F7` nueva venta en paralelo, `F8` aparcar, `F9` venta rápida de un ítem,
   `F11` pantalla completa, `F12` cobrar, `Suprimir` quitar la línea seleccionada del carrito.
