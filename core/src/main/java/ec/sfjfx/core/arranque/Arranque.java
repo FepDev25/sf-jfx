@@ -31,8 +31,12 @@ public final class Arranque {
 
         boolean sembrado = SemillaDesarrollo.ejecutar();
         System.out.println(sembrado
-                ? "Semilla de desarrollo creada (admin/admin)."
-                : "Semilla ya presente; nada que hacer.");
+                ? "Semilla base creada (admin/admin)."
+                : "Semilla base ya presente; nada que hacer.");
+        boolean demo = SemillaDemo.ejecutar();
+        System.out.println(demo
+                ? "Datos de demostracion masivos creados."
+                : "Los datos de demostracion ya estaban aplicados.");
         System.out.println("Listo.");
     }
 }
