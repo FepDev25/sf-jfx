@@ -289,3 +289,16 @@
     -fx-border-radius: 8;
     -fx-background-radius: 8;
 }
+
+.text-area {
+    -fx-background-color: -sf-surface;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size: 12px;
+}
+
+.text-area .content {
+    -fx-background-color: transparent;
+}
