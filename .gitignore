@@ -1,0 +1,26 @@
+# Maven
+target/
+pom.xml.versionsBackup
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+nbproject/
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Aplicacion
+*.log
+/backups/
+/respaldos/
+/uploads/
+config/sfjfx.properties

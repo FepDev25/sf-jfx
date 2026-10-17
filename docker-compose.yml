@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: sfjfx-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sfjfx
+      POSTGRES_USER: sfjfx
+      POSTGRES_PASSWORD: sfjfx
+      TZ: America/Guayaquil
+    ports:
+      - "55432:5432"
+    volumes:
+      - sfjfx-datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sfjfx -d sfjfx"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  sfjfx-datos:
