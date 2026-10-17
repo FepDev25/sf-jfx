@@ -16,12 +16,12 @@ Rol que ve cada vista entre paréntesis. `[flag]` = módulo que debe estar activ
 - **Centro de notificaciones / alertas** — bajo stock, por vencer, sesiones de caja abiertas, respaldos fallidos. (Admin/Gerente)
 
 ## Modo Caja (POS) — `[POS]`
-- **POS principal** — fullscreen, carrito grande, total visible, teclado, atajos F-keys, búsqueda por nombre/código, escaneo. (Cajero)
+- **POS principal** — fullscreen, carrito grande, total visible, teclado, atajos F-keys, catálogo paginado (50 por página), búsqueda por nombre/código y escaneo. (Cajero)
 - **Cobro / pagos** — medios múltiples, pago mixto, cálculo de vuelto, referencia de tarjeta, canje de puntos. (Cajero)
 - **Aplicar descuento** — por línea (con autorización usuario + PIN) o global. (Cajero/Supervisor)
 - **Venta rápida 1-ítem** — `F9`, cobra el carrito de un solo ítem en efectivo. (Cajero)
 - **Ventas en paralelo** — `F7` aparca la venta actual y abre un carrito nuevo; se retoman con Recuperar. (Cajero)
-- **Ventas aparcadas** — hold y recuperación; múltiples carritos en pestañas. (Cajero)
+- **Ventas aparcadas** — hold y recuperación; nueva venta en paralelo (`F7`). (Cajero)
 - **Devolución en caja** — seleccionar venta/ítems, reintegro, generar nota de crédito. (Supervisor)
 - **Apertura de turno** — monto inicial. (Cajero)
 - **Cierre de turno / arqueo** — conteo por denominación, diferencia, observación. (Cajero/Supervisor)

@@ -111,7 +111,7 @@ prueba y cómo reiniciar el entorno.
 
 - Listados: `F5` actualizar, `Ctrl+F` enfocar búsqueda.
 - POS: `F2` buscar, `F7` nueva venta en paralelo, `F8` aparcar, `F9` venta rápida de un ítem,
-  `F11` pantalla completa, `F12` cobrar.
+  `F11` pantalla completa, `F12` cobrar, `Suprimir` quitar la línea seleccionada del carrito.
 
 ## Respaldos
 

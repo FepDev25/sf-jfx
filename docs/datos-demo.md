@@ -66,7 +66,7 @@ UI oculta acciones sin permiso.
 
 1. **Cajero:** entrar con `cajero1` o `cajero2`, abrir el POS, agregar productos, aplicar una
    promoción/cupón, probar `F9` (venta rápida), `F8` (aparcar), `F7` (nueva venta en paralelo),
-   descuento por línea con PIN `1234`/`3333` y cobrar con pago mixto.
+   descuento por línea con PIN `1234`/`3333`, quitar una línea con `Suprimir` y cobrar con pago mixto.
 2. **Supervisor:** consultar ventas, anular una venta, revisar sesiones de caja y devoluciones.
 3. **Bodeguero:** revisar stock, kardex, lotes por vencer, ajustes y transferencias.
 4. **Contador:** revisar facturas de proveedor, CxP, retenciones, comprobantes emitidos y
