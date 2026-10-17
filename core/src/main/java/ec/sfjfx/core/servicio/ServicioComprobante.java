@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import ec.sfjfx.core.db.Bd;
+import ec.sfjfx.core.repositorio.Pagina;
 import ec.sfjfx.core.modelo.Cliente;
 import ec.sfjfx.core.modelo.Comprobante;
 import ec.sfjfx.core.modelo.ComprobanteDetalle;
@@ -61,6 +62,10 @@ public final class ServicioComprobante {
 
     public List<Comprobante> listar(String filtro) {
         return repo.listar(empresa(), filtro);
+    }
+
+    public Pagina<Comprobante> pagina(String filtro, int pagina, int tamano) {
+        return repo.paginar(empresa(), filtro, pagina, tamano);
     }
 
     public Comprobante porId(long id) {

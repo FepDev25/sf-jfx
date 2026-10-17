@@ -122,6 +122,45 @@ public final class ComprobanteRepositorio {
         }
     }
 
+    public Pagina<Comprobante> paginar(long empresaId, String filtro, int pagina, int tamano) {
+        int p = Math.max(1, pagina);
+        int t = Math.min(200, Math.max(1, tamano));
+        return Bd.consulta(c -> {
+            String patron = (filtro == null || filtro.isBlank()) ? null : "%" + filtro.trim() + "%";
+            String filtroSql = " AND (? IS NULL OR numero_completo ILIKE ? OR clave_acceso ILIKE ? "
+                    + "OR receptor_razon_social ILIKE ?)";
+            long total;
+            try (PreparedStatement ps = c.prepareStatement(
+                    "SELECT COUNT(*) FROM comprobante WHERE empresa_id = ?" + filtroSql)) {
+                ps.setLong(1, empresaId);
+                for (int i = 2; i <= 5; i++) {
+                    ps.setString(i, patron);
+                }
+                try (ResultSet rs = ps.executeQuery()) {
+                    rs.next();
+                    total = rs.getLong(1);
+                }
+            }
+            List<Comprobante> lista = new ArrayList<>();
+            String sql = "SELECT * FROM comprobante WHERE empresa_id = ?" + filtroSql
+                    + " ORDER BY id DESC OFFSET ? LIMIT ?";
+            try (PreparedStatement ps = c.prepareStatement(sql)) {
+                ps.setLong(1, empresaId);
+                for (int i = 2; i <= 5; i++) {
+                    ps.setString(i, patron);
+                }
+                ps.setInt(6, (p - 1) * t);
+                ps.setInt(7, t);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        lista.add(mapear(rs));
+                    }
+                }
+            }
+            return new Pagina<>(lista, total, p, t);
+        });
+    }
+
     public Optional<Comprobante> porId(long id) {
         return Bd.consulta(c -> {
             Comprobante cab = null;

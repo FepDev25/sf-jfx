@@ -223,6 +223,47 @@ public final class VentaRepositorio {
         });
     }
 
+    public Pagina<Venta> paginar(long empresaId, String filtro, int pagina, int tamano) {
+        int p = Math.max(1, pagina);
+        int t = Math.min(200, Math.max(1, tamano));
+        return Bd.consulta(c -> {
+            String patron = (filtro == null || filtro.isBlank()) ? null : "%" + filtro.trim() + "%";
+            String filtroSql = " AND (? IS NULL OR v.numero ILIKE ? OR cl.razon_social ILIKE ? "
+                    + "OR COALESCE(cl.nombres, '') || ' ' || COALESCE(cl.apellidos, '') ILIKE ?)";
+            long total;
+            try (PreparedStatement ps = c.prepareStatement(
+                    "SELECT COUNT(*) FROM venta v LEFT JOIN cliente cl ON cl.id = v.cliente_id "
+                    + "WHERE v.empresa_id = ? AND v.tipo = 'VENTA'" + filtroSql)) {
+                ps.setLong(1, empresaId);
+                for (int i = 2; i <= 5; i++) {
+                    ps.setString(i, patron);
+                }
+                try (ResultSet rs = ps.executeQuery()) {
+                    rs.next();
+                    total = rs.getLong(1);
+                }
+            }
+            List<Venta> lista = new ArrayList<>();
+            String sql = "SELECT " + COLUMNAS + " FROM venta v LEFT JOIN cliente cl ON cl.id = v.cliente_id "
+                    + "WHERE v.empresa_id = ? AND v.tipo = 'VENTA'" + filtroSql
+                    + " ORDER BY v.id DESC OFFSET ? LIMIT ?";
+            try (PreparedStatement ps = c.prepareStatement(sql)) {
+                ps.setLong(1, empresaId);
+                for (int i = 2; i <= 5; i++) {
+                    ps.setString(i, patron);
+                }
+                ps.setInt(6, (p - 1) * t);
+                ps.setInt(7, t);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        lista.add(mapear(rs));
+                    }
+                }
+            }
+            return new Pagina<>(lista, total, p, t);
+        });
+    }
+
     public List<Venta> aparcadas(long cajaId) {
         return Bd.consulta(c -> {
             String sql = "SELECT " + COLUMNAS + " FROM venta v LEFT JOIN cliente cl ON cl.id = v.cliente_id "

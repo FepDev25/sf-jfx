@@ -53,6 +53,45 @@ public final class ProductoRepositorio {
         });
     }
 
+    public Pagina<Producto> paginar(long empresaId, String filtro, int pagina, int tamano) {
+        int p = Math.max(1, pagina);
+        int t = Math.min(200, Math.max(1, tamano));
+        return Bd.consulta(c -> {
+            String patron = (filtro == null || filtro.isBlank()) ? null : "%" + filtro.trim() + "%";
+            long total;
+            try (PreparedStatement ps = c.prepareStatement(
+                    "SELECT COUNT(*) FROM producto WHERE empresa_id = ? "
+                    + "AND (? IS NULL OR nombre ILIKE ? OR codigo ILIKE ?)")) {
+                ps.setLong(1, empresaId);
+                ps.setString(2, patron);
+                ps.setString(3, patron);
+                ps.setString(4, patron);
+                try (ResultSet rs = ps.executeQuery()) {
+                    rs.next();
+                    total = rs.getLong(1);
+                }
+            }
+            List<Producto> lista = new ArrayList<>();
+            String sql = "SELECT " + COLUMNAS + " FROM producto WHERE empresa_id = ? "
+                    + "AND (? IS NULL OR nombre ILIKE ? OR codigo ILIKE ?) "
+                    + "ORDER BY nombre OFFSET ? LIMIT ?";
+            try (PreparedStatement ps = c.prepareStatement(sql)) {
+                ps.setLong(1, empresaId);
+                ps.setString(2, patron);
+                ps.setString(3, patron);
+                ps.setString(4, patron);
+                ps.setInt(5, (p - 1) * t);
+                ps.setInt(6, t);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        lista.add(mapear(rs));
+                    }
+                }
+            }
+            return new Pagina<>(lista, total, p, t);
+        });
+    }
+
     public Optional<Producto> porId(long id) {
         return Bd.consulta(c -> porId(c, id));
     }

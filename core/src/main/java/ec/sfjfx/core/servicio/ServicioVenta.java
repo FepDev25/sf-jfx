@@ -42,6 +42,10 @@ public final class ServicioVenta {
         return repo.listar(empresa(), filtro, 300);
     }
 
+    public ec.sfjfx.core.repositorio.Pagina<Venta> pagina(String filtro, int pagina, int tamano) {
+        return repo.paginar(empresa(), filtro, pagina, tamano);
+    }
+
     public Venta porId(long id) {
         return repo.porId(id).orElseThrow(() -> new ValidacionExcepcion("Venta no encontrada"));
     }

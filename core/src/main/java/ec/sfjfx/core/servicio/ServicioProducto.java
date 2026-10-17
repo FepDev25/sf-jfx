@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import ec.sfjfx.core.db.Bd;
+import ec.sfjfx.core.repositorio.Pagina;
 import ec.sfjfx.core.modelo.CodigoBarra;
 import ec.sfjfx.core.modelo.HistorialPrecio;
 import ec.sfjfx.core.modelo.PrecioProducto;
@@ -27,6 +28,10 @@ public final class ServicioProducto {
 
     public List<Producto> listar(String filtro) {
         return repo.listar(empresa(), filtro);
+    }
+
+    public Pagina<Producto> pagina(String filtro, int pagina, int tamano) {
+        return repo.paginar(empresa(), filtro, pagina, tamano);
     }
 
     public ProductoCompleto cargar(long id) {

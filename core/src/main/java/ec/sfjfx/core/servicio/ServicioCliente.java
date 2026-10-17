@@ -3,6 +3,7 @@ package ec.sfjfx.core.servicio;
 import java.util.List;
 import java.util.Map;
 
+import ec.sfjfx.core.repositorio.Pagina;
 import ec.sfjfx.core.modelo.Cliente;
 import ec.sfjfx.core.modelo.ClienteContacto;
 import ec.sfjfx.core.modelo.ClienteDireccion;
@@ -22,6 +23,10 @@ public final class ServicioCliente {
 
     public List<Cliente> listar(String filtro) {
         return repo.listar(empresa(), filtro);
+    }
+
+    public Pagina<Cliente> pagina(String filtro, int pagina, int tamano) {
+        return repo.paginar(empresa(), filtro, pagina, tamano);
     }
 
     public Cliente porId(long id) {

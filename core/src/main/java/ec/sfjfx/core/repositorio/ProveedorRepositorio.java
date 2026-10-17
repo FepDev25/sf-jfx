@@ -40,6 +40,45 @@ public final class ProveedorRepositorio {
         });
     }
 
+    public Pagina<Proveedor> paginar(long empresaId, String filtro, int pagina, int tamano) {
+        int p = Math.max(1, pagina);
+        int t = Math.min(200, Math.max(1, tamano));
+        return Bd.consulta(c -> {
+            String patron = (filtro == null || filtro.isBlank()) ? null : "%" + filtro.trim() + "%";
+            long total;
+            try (PreparedStatement ps = c.prepareStatement(
+                    "SELECT COUNT(*) FROM proveedor WHERE empresa_id = ? "
+                    + "AND (? IS NULL OR razon_social ILIKE ? OR numero_identificacion ILIKE ?)")) {
+                ps.setLong(1, empresaId);
+                ps.setString(2, patron);
+                ps.setString(3, patron);
+                ps.setString(4, patron);
+                try (ResultSet rs = ps.executeQuery()) {
+                    rs.next();
+                    total = rs.getLong(1);
+                }
+            }
+            List<Proveedor> lista = new ArrayList<>();
+            String sql = "SELECT " + COLUMNAS + " FROM proveedor WHERE empresa_id = ? "
+                    + "AND (? IS NULL OR razon_social ILIKE ? OR numero_identificacion ILIKE ?) "
+                    + "ORDER BY razon_social OFFSET ? LIMIT ?";
+            try (PreparedStatement ps = c.prepareStatement(sql)) {
+                ps.setLong(1, empresaId);
+                ps.setString(2, patron);
+                ps.setString(3, patron);
+                ps.setString(4, patron);
+                ps.setInt(5, (p - 1) * t);
+                ps.setInt(6, t);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        lista.add(mapear(rs));
+                    }
+                }
+            }
+            return new Pagina<>(lista, total, p, t);
+        });
+    }
+
     public Optional<Proveedor> porId(long id) {
         return Bd.consulta(c -> {
             try (PreparedStatement ps = c.prepareStatement("SELECT " + COLUMNAS + " FROM proveedor WHERE id = ?")) {
