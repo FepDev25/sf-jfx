@@ -67,6 +67,7 @@ public class App extends Application {
     private void verificarBaseDeDatos() {
         try {
             AppConfig.cargar();
+            new ec.sfjfx.core.servicio.ServicioLog().redirigirSalida();
         } catch (RuntimeException e) {
             Alertas.error("Configuracion", e.getMessage());
         }
@@ -115,5 +116,10 @@ public class App extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @Override
+    public void stop() {
+        ConexionBD.cerrar();
     }
 }

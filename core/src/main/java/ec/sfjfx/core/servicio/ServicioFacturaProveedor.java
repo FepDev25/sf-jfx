@@ -14,6 +14,7 @@ import ec.sfjfx.core.util.Validaciones;
 
 public final class ServicioFacturaProveedor {
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final FacturaProveedorRepositorio repo = new FacturaProveedorRepositorio();
     private final ServicioAuditoria auditoria = new ServicioAuditoria();
 
@@ -32,6 +33,7 @@ public final class ServicioFacturaProveedor {
     public long registrar(long proveedorId, String tipoDocumento, String numero, LocalDate fechaEmision,
                           LocalDate fechaVencimiento, BigDecimal subtotal, BigDecimal descuento, BigDecimal iva,
                           BigDecimal total, Long ordenCompraId, Long recepcionId) {
+        licencia.exigirOperacion("registrar una factura de proveedor");
         Validaciones.requerido(numero, "Numero");
         if (fechaEmision == null) {
             throw new ValidacionExcepcion("La fecha de emision es obligatoria");

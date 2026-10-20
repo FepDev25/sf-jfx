@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
  */
 public record Instalacion(
         Long id,
+        String codigoUnico,
         String nombre,
         String modo,
         String versionEsquema,

@@ -15,7 +15,9 @@ import java.util.Map;
 
 import ec.sfjfx.core.config.AppConfig;
 import ec.sfjfx.core.modelo.Respaldo;
+import ec.sfjfx.core.modelo.Empresa;
 import ec.sfjfx.core.repositorio.ConfiguracionRepositorio;
+import ec.sfjfx.core.repositorio.EmpresaRepositorio;
 import ec.sfjfx.core.repositorio.RespaldoRepositorio;
 import ec.sfjfx.core.seguridad.SesionActual;
 import ec.sfjfx.core.util.ValidacionExcepcion;
@@ -42,8 +44,63 @@ public final class ServicioRespaldo {
     }
 
     public Respaldo respaldar(boolean programado) {
-        long empresaId = empresa();
-        Long usuarioId = SesionActual.requerida().usuario().id();
+        return respaldar(programado, empresa(), SesionActual.requerida().usuario().id());
+    }
+
+    /** Resultado de un respaldo generado desde consola (sin sesion de usuario). */
+    public record RespaldoResultado(String ruta, long tamanoBytes, boolean verificado, String detalle) {
+        public String tamanoLegible() {
+            if (tamanoBytes < 1024) {
+                return tamanoBytes + " B";
+            }
+            double kb = tamanoBytes / 1024.0;
+            if (kb < 1024) {
+                return String.format("%.1f KB", kb);
+            }
+            return String.format("%.1f MB", kb / 1024.0);
+        }
+    }
+
+    /**
+     * Genera un respaldo sin requerir sesion de usuario.
+     *
+     * <p>Se usa desde la linea de comandos para las tareas programadas del sistema operativo
+     * (cron o Task Scheduler), que corren con la aplicacion cerrada.
+     */
+    public RespaldoResultado respaldarDesdeConsola() {
+        Long empresaId = empresaDeInstalacion();
+        Path destino = null;
+        try {
+            Path directorio = directorioSinSesion();
+            Files.createDirectories(directorio);
+            DatosConexion datos = datosConexion();
+            destino = directorio.resolve("sfjfx-" + datos.baseDatos() + "-"
+                    + java.time.LocalDateTime.now().format(MARCA) + ".dump");
+            List<String> comando = new ArrayList<>();
+            comando.add(pgDumpSinSesion());
+            comando.add("--format=custom");
+            comando.add("--no-owner");
+            comando.add("--no-privileges");
+            comando.add("--file=" + destino.toAbsolutePath());
+            agregarConexion(comando, datos);
+            Ejecucion ejecucion = ejecutar(comando, datos);
+            if (ejecucion.codigo() != 0) {
+                throw new IllegalStateException("pg_dump fallo (" + ejecucion.codigo() + "): "
+                        + recortar(ejecucion.salida()));
+            }
+            String verificacion = verificarArchivo(destino);
+            if (verificacion.startsWith("ERROR")) {
+                throw new IllegalStateException(verificacion);
+            }
+            long tamano = Files.isRegularFile(destino) ? Files.size(destino) : 0;
+            registrar(empresaId, null, destino, tamano, "PROGRAMADO", "OK", verificacion);
+            return new RespaldoResultado(destino.toAbsolutePath().toString(), tamano, true, verificacion);
+        } catch (IOException e) {
+            throw new IllegalStateException("No se pudo ejecutar el respaldo: " + e.getMessage(), e);
+        }
+    }
+
+    private Respaldo respaldar(boolean programado, long empresaId, Long usuarioId) {
         Path destino = null;
         String detalle = "Respaldo completado";
         String estado = "OK";
@@ -64,14 +121,17 @@ public final class ServicioRespaldo {
             if (ejecucion.codigo() != 0) {
                 estado = "ERROR";
                 detalle = recortar("pg_dump fallo (" + ejecucion.codigo() + "): " + ejecucion.salida());
+            } else {
+                detalle = verificarArchivo(destino);
+                if (detalle.startsWith("ERROR")) {
+                    estado = "ERROR";
+                }
             }
             long tamano = Files.isRegularFile(destino) ? Files.size(destino) : 0;
             Respaldo respaldo = new Respaldo(null, empresaId, destino.toAbsolutePath().toString(), tamano,
                     programado ? "PROGRAMADO" : "MANUAL", estado, usuarioId,
                     java.time.LocalDateTime.now(), detalle);
-            long id = repo.insertar(respaldo);
-            auditoria.registrar("RESPALDO", "respaldo", id, "CREAR", null,
-                    Map.of("estado", estado, "tipo", respaldo.tipo()));
+            long id = registrar(empresaId, usuarioId, destino, tamano, respaldo.tipo(), estado, detalle);
             if ("ERROR".equals(estado)) {
                 throw new IllegalStateException(detalle);
             }
@@ -82,9 +142,54 @@ public final class ServicioRespaldo {
             Respaldo respaldo = new Respaldo(null, empresaId, destino == null ? "" : destino.toString(), 0,
                     programado ? "PROGRAMADO" : "MANUAL", "ERROR", usuarioId,
                     java.time.LocalDateTime.now(), recortar(e.getMessage()));
-            long id = repo.insertar(respaldo);
-            auditoria.registrar("RESPALDO", "respaldo", id, "CREAR", null, Map.of("estado", "ERROR"));
+            registrar(empresaId, usuarioId, destino, 0, respaldo.tipo(), "ERROR", respaldo.detalle());
             throw new IllegalStateException("No se pudo ejecutar el respaldo: " + e.getMessage(), e);
+        }
+    }
+
+    /** Registra el respaldo en el historial. La auditoria solo aplica si hay sesion de usuario. */
+    private long registrar(Long empresaId, Long usuarioId, Path destino, long tamano, String tipo,
+                           String estado, String detalle) {
+        Respaldo respaldo = new Respaldo(null, empresaId,
+                destino == null ? "" : destino.toAbsolutePath().toString(), tamano,
+                tipo, estado, usuarioId, java.time.LocalDateTime.now(), detalle);
+        long id = repo.insertar(respaldo);
+        if (SesionActual.haySesion()) {
+            auditoria.registrar("RESPALDO", "respaldo", id, "CREAR", null,
+                    Map.of("estado", estado, "tipo", tipo));
+        }
+        return id;
+    }
+
+    /** Verifica que un archivo de respaldo sea legible por pg_restore. */
+    public String verificar(Path archivo) {
+        if (archivo == null || !Files.isRegularFile(archivo)) {
+            throw new ValidacionExcepcion("Seleccione un archivo de respaldo valido");
+        }
+        String resultado = verificarArchivo(archivo);
+        if (resultado.startsWith("ERROR")) {
+            throw new IllegalStateException(resultado);
+        }
+        return resultado;
+    }
+
+    private String verificarArchivo(Path archivo) {
+        try {
+            if (!Files.isRegularFile(archivo) || Files.size(archivo) == 0) {
+                return "ERROR: el archivo de respaldo esta vacio";
+            }
+            List<String> comando = List.of(
+                    pgRestore(),
+                    "--list",
+                    archivo.toAbsolutePath().toString());
+            Ejecucion ejecucion = ejecutar(comando, datosConexion());
+            if (ejecucion.codigo() != 0) {
+                return recortar("ERROR: pg_restore --list fallo (" + ejecucion.codigo() + "): "
+                        + ejecucion.salida());
+            }
+            return "Respaldo verificado";
+        } catch (IOException e) {
+            return "ERROR: no se pudo verificar el respaldo: " + e.getMessage();
         }
     }
 
@@ -129,6 +234,37 @@ public final class ServicioRespaldo {
         return path.isAbsolute() ? path : Path.of(System.getProperty("user.home")).resolve(path);
     }
 
+    /**
+     * Directorio de respaldos sin sesion de usuario.
+     *
+     * <p>Usa la configuracion de la empresa de la instalacion y, si no existe, el valor por
+     * defecto {@code ~/.sfjfx/respaldos}.
+     */
+    public Path directorioSinSesion() {
+        Long empresaId = empresaDeInstalacion();
+        if (empresaId == null) {
+            return Path.of(System.getProperty("user.home"), ".sfjfx", "respaldos");
+        }
+        String valor = configuracion.valor(empresaId, CLAVE_DIRECTORIO, null);
+        if (valor == null || valor.isBlank()) {
+            return Path.of(System.getProperty("user.home"), ".sfjfx", "respaldos");
+        }
+        return expandir(valor.trim());
+    }
+
+    /** Empresa de la instalacion, sin depender de la sesion de usuario. */
+    private Long empresaDeInstalacion() {
+        return new EmpresaRepositorio().primeraActiva().map(Empresa::id).orElse(null);
+    }
+
+    private Path expandir(String ruta) {
+        if (ruta.startsWith("~")) {
+            ruta = System.getProperty("user.home") + ruta.substring(1);
+        }
+        Path path = Path.of(ruta);
+        return path.isAbsolute() ? path : Path.of(System.getProperty("user.home")).resolve(path);
+    }
+
     public boolean programadoActivo() {
         return Boolean.parseBoolean(configuracion.valor(empresa(), CLAVE_PROGRAMADO, "false"));
     }
@@ -137,12 +273,34 @@ public final class ServicioRespaldo {
         return configuracion.valor(empresa(), CLAVE_HORA, "23:00");
     }
 
+    /** Ruta de {@code pg_dump}. Sin sesion de usuario usa la de la instalacion o el valor por defecto. */
     public String pgDump() {
+        if (!SesionActual.haySesion()) {
+            return pgDumpSinSesion();
+        }
         return configuracion.valor(empresa(), CLAVE_PG_DUMP, "pg_dump");
     }
 
+    /** Ruta de {@code pg_restore}. Sin sesion de usuario usa la de la instalacion o el valor por defecto. */
     public String pgRestore() {
+        if (!SesionActual.haySesion()) {
+            return pgRestoreSinSesion();
+        }
         return configuracion.valor(empresa(), CLAVE_PG_RESTORE, "pg_restore");
+    }
+
+    /** Ruta de {@code pg_dump} sin sesion de usuario. */
+    private String pgDumpSinSesion() {
+        Long empresaId = empresaDeInstalacion();
+        String valor = empresaId == null ? null : configuracion.valor(empresaId, CLAVE_PG_DUMP, null);
+        return valor == null || valor.isBlank() ? "pg_dump" : valor.trim();
+    }
+
+    /** Ruta de {@code pg_restore} sin sesion de usuario. */
+    private String pgRestoreSinSesion() {
+        Long empresaId = empresaDeInstalacion();
+        String valor = empresaId == null ? null : configuracion.valor(empresaId, CLAVE_PG_RESTORE, null);
+        return valor == null || valor.isBlank() ? "pg_restore" : valor.trim();
     }
 
     public void guardarProgramacion(boolean activo, String hora, String directorio) {

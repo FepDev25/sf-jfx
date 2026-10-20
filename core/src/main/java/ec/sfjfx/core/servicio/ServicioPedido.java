@@ -24,6 +24,7 @@ public final class ServicioPedido {
 
     private static final List<String> FLUJO = List.of("RECIBIDO", "EN_PREPARACION", "LISTO", "EN_REPARTO", "ENTREGADO");
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final PedidoRepositorio repo = new PedidoRepositorio();
     private final ProductoRepositorio productos = new ProductoRepositorio();
     private final ServicioVenta ventas = new ServicioVenta();
@@ -39,6 +40,7 @@ public final class ServicioPedido {
 
     public long crear(long sucursalId, Long clienteId, String tipoEntrega, Long direccionId, String nota,
                       List<PedidoDetalle> detalles) {
+        licencia.exigirOperacion("crear un pedido");
         if (detalles == null || detalles.isEmpty()) {
             throw new ValidacionExcepcion("El pedido no tiene items");
         }
@@ -69,6 +71,7 @@ public final class ServicioPedido {
 
     /** Convierte el pedido en venta pagada y enlaza el documento. */
     public long convertirAVenta(long pedidoId, SesionCaja sesion, long bodegaId, long medioPagoId, boolean incluyeIva) {
+        licencia.exigirOperacion("convertir un pedido en venta");
         Pedido p = porId(pedidoId);
         if (p.convertido()) {
             throw new ValidacionExcepcion("El pedido ya fue convertido a venta");

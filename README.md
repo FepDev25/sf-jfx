@@ -13,6 +13,7 @@ sf-jfx/ (parent pom)
 ├── core/   Dominio, repositorios JDBC y reglas de negocio. Sin dependencia de la UI.
 ├── dev/    Herramientas de desarrollo (semillas). No forma parte del producto instalable.
 ├── ui/     Interfaz JavaFX (shell, Modo Caja, vistas por módulo).
+├── dist/   Plantillas de empaquetado, actualización y operación (Linux/Windows).
 └── docs/   Diseño: decisiones, modelo de datos, vistas de UI y roadmap.
 ```
 
@@ -39,12 +40,17 @@ compartido.
   un tenant de SaaS.
 - Una base PostgreSQL por instalación. Si varios clientes comparten servidor PostgreSQL, cada uno
   usa una base independiente.
-- Instalador nativo para **Windows y Linux**, con **PostgreSQL incluido** y administrado por el
-  instalador (Fase 2).
+- Instalador `app-image` para **Windows y Linux**, con **PostgreSQL incluido** y administrado por
+  el instalador. El alcance es **solo escritorio**: no hay modo servidor ni API.
+- PostgreSQL con **puerto libre detectado** y **credenciales aleatorias** generadas en la
+  instalación.
 - Modo por defecto **`UNICA_EMPRESA`**; el modo `MULTIEMPRESA` es una opción avanzada explícita.
-- **Instalación manual** con instalador y **actualizaciones remotas asistidas**, aprobadas por un
-  técnico. No hay actualización automática por flota.
-- **Licencia perpetua por instalación + mantenimiento anual**, mediante archivo firmado offline.
+- **Instalación manual** con instalador y **actualizaciones remotas asistidas** desde un canal
+  HTTPS propio, aprobadas por un técnico. No hay actualización automática por flota.
+- **Licencia perpetua por instalación + mantenimiento anual**, mediante archivo firmado offline
+  con clave pública embebida en el build. Sin licencia vigente la aplicación entra en **modo
+  consulta**: no registra ventas, compras ni comprobantes, pero se puede seguir consultando,
+  exportando y accediendo a los datos.
 - El primer arranque se resuelve con un **asistente de instalación**, sin credenciales por
   defecto (Hito 12, Fase 1).
 - Las semillas de desarrollo/demostración **no se incluyen en el instalador ni se ejecutan en
@@ -52,12 +58,12 @@ compartido.
 
 Decisión completa y plan de implementación:
 [`docs/adr/0001-modelo-despliegue-single-tenant.md`](docs/adr/0001-modelo-despliegue-single-tenant.md).
-Estado: **Fases 0 y 1 completadas; Fase 2 pendiente; Fase 3 pendiente**.
+Estado: **Fases 0 y 1 completadas; Fase 2 en curso; Fase 3 pendiente**.
 
 ## Compilar y probar
 
 ```bash
-mvn clean package       # compila y ejecuta las 79 pruebas
+mvn clean package       # compila y ejecuta las 86 pruebas
 mvn test                # solo pruebas
 ```
 
@@ -162,10 +168,36 @@ prueba y cómo reiniciar el entorno.
 - POS: `F2` buscar, `F7` nueva venta en paralelo, `F8` aparcar, `F9` venta rápida de un ítem,
   `F11` pantalla completa, `F12` cobrar, `Suprimir` quitar la línea seleccionada del carrito.
 
+## Operación (Fase 2)
+
+- **Pool HikariCP** configurable con `db.pool.*`.
+- **Respaldos verificados** con `pg_dump` + `pg_restore --list`; la restauración se prueba desde
+  **Configuración → Respaldos**.
+- **Comandos de operación** (sin sesión de usuario, pensados para tareas del sistema operativo):
+  ```bash
+  mvn -pl core exec:java -Dexec.args="respaldo"   # genera y verifica un respaldo
+  mvn -pl core exec:java -Dexec.args="salud"      # healthcheck: código de salida 0/1
+  ```
+- **Registro con rotación** en `~/.sfjfx/logs/sfjjx-YYYY-MM-DD.log`.
+- **Licencia perpetua + mantenimiento anual** en archivo firmado offline. La pantalla
+  **Configuración → Licencia** muestra el código de instalación y permite cargar/renovar.
+- **Modo consulta**: sin licencia vigente (tras el periodo de prueba) o con mantenimiento vencido
+  (tras la gracia), se bloquean ventas, compras, comprobantes y movimientos de stock; se puede
+  seguir consultando, exportando y accediendo a los datos.
+- **Actualizaciones asistidas** en **Configuración → Actualizaciones**: manifiesto firmado,
+  descarga y verificación SHA-256. La aplicación del paquete la ejecuta el técnico con el
+  instalador/script.
+- **Estado de la instalación** en **Configuración → Estado**: versión, PostgreSQL, esquema,
+  licencia, salud y último respaldo.
+- Plantillas de distribución y procedimiento de rollback: [`dist/README.md`](dist/README.md).
+
 ## Respaldos
 
 Los respaldos usan `pg_dump`/`pg_restore` del cliente PostgreSQL (deben estar en el `PATH`) y se
 configuran desde **Configuración → Respaldos**. El directorio por defecto es `~/.sfjfx/respaldos`.
+Cada respaldo se verifica con `pg_restore --list` y la UI permite verificar o restaurar un archivo.
+Antes de una actualización, genere y verifique un respaldo; consulte
+[`dist/README.md`](dist/README.md) para el procedimiento de rollback.
 
 ## Estado
 
@@ -173,12 +205,14 @@ configuran desde **Configuración → Respaldos**. El directorio por defecto es 
   ventas/POS/caja, clientes/pedidos, facturación SRI (simulada), fidelización/promociones,
   reportes/analítica, administración/operación y **pulido/aseguramiento** (paginación, índices,
   atajos de teclado, accesibilidad y 72 pruebas automatizadas).
-- **Hito 12 — Despliegue auto-instalable:** **Fases 0 y 1 completadas; Fase 2 pendiente.** Fase 0:
+- **Hito 12 — Despliegue auto-instalable:** **Fases 0 y 1 completadas; Fase 2 en curso.** Fase 0:
   arranque solo migraciones y semillas aisladas en `dev`. Fase 1: asistente de primer arranque con
-  `V8`. 79 pruebas verdes. Ver
+  `V8`. Fase 2: HikariCP, advisory lock, respaldo verificado, licencia offline, modo consulta,
+  estado de instalación y canal de updates firmado; instaladores y actualización de punta a
+  punta pendientes de validación en release. 86 pruebas verdes. Ver
   [ADR-0001](docs/adr/0001-modelo-despliegue-single-tenant.md).
-- Base de datos Docker (PostgreSQL 17, puerto 55432): 90 tablas (incluida `migracion_esquema`;
-  `V1`–`V8`) + datos base. Los datos de demostración son opcionales y solo para desarrollo/local.
+- Base de datos Docker (PostgreSQL 17, puerto 55432): 91 tablas (incluida `migracion_esquema`;
+  `V1`–`V9`) + datos base. Los datos de demostración son opcionales y solo para desarrollo/local.
 - El alcance funcional quedó completo; sigue mantenimiento evolutivo, validación con uso real y
   la implementación del despliegue auto-instalable.
 

@@ -14,7 +14,10 @@ Documentación de diseño del sistema de facturación para supermercados.
 
 Estado: **Hitos 0 a 11 cerrados**. Alcance funcional congelado. El **Hito 12 (despliegue
 auto-instalable)** está documentado en el [ADR-0001](adr/0001-modelo-despliegue-single-tenant.md):
-**Fases 0 y 1 completadas** (semillas fuera del arranque y del producto, asistente de primer
-arranque); Fases 2–3 pendientes.
+**Fases 0 y 1 completadas; Fase 2 en curso** (base operativa, respaldos, licencia, modo consulta,
+logs, healthcheck y updates; empaquetado nativo pendiente de release); Fase 3 pendiente.
+
+Lo que queda abierto está en
+[roadmap.md → Pendientes para la próxima sesión](roadmap.md#pendientes-para-la-próxima-sesión).
 
 Para probar la aplicación: [`datos-demo.md`](datos-demo.md) (usuarios, datos y reinicio del entorno).

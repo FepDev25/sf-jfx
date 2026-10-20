@@ -14,6 +14,7 @@ import ec.sfjfx.core.util.ValidacionExcepcion;
 
 public final class ServicioPagoProveedor {
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final PagoProveedorRepositorio repo = new PagoProveedorRepositorio();
     private final FacturaProveedorRepositorio facturas = new FacturaProveedorRepositorio();
     private final ServicioAuditoria auditoria = new ServicioAuditoria();
@@ -25,6 +26,7 @@ public final class ServicioPagoProveedor {
     /** Registra un pago aplicandolo a una o varias facturas (pagos parciales permitidos). */
     public long registrar(long proveedorId, BigDecimal total, Long medioPagoId, String referencia, String nota,
                           List<PagoProveedor.PagoFactura> aplicaciones) {
+        licencia.exigirOperacion("registrar un pago a proveedor");
         if (aplicaciones == null || aplicaciones.isEmpty()) {
             throw new ValidacionExcepcion("El pago debe aplicarse al menos a una factura");
         }

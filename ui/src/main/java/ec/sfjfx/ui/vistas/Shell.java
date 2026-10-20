@@ -13,6 +13,7 @@ import ec.sfjfx.core.repositorio.SucursalRepositorio;
 import ec.sfjfx.core.seguridad.Sesion;
 import ec.sfjfx.core.seguridad.SesionActual;
 import ec.sfjfx.core.servicio.GestorModulos;
+import ec.sfjfx.core.servicio.ServicioLicencia;
 import ec.sfjfx.core.servicio.ServicioRespaldo;
 
 import javafx.animation.KeyFrame;
@@ -47,7 +48,9 @@ public final class Shell extends BorderPane {
     public Shell(Sesion sesion, Runnable alSalir) {
         this.sesion = sesion;
         getStyleClass().add("raiz");
-        setTop(construirCabecera(alSalir));
+        VBox superior = new VBox();
+        superior.getChildren().addAll(construirCabecera(alSalir), construirAvisoLicencia());
+        setTop(superior);
         setLeft(construirSidebar());
         setCenter(contenido);
         mostrarInicio();
@@ -59,7 +62,6 @@ public final class Shell extends BorderPane {
                 ? sesion.empresa().nombreComercial()
                 : sesion.empresa().razonSocial());
         empresa.getStyleClass().add("cabecera-empresa");
-
         ComboBox<Sucursal> selectorSucursal = new ComboBox<>();
         selectorSucursal.getItems().setAll(
                 sucursales.porUsuario(sesion.usuario().id(), sesion.empresa().id()));
@@ -100,6 +102,29 @@ public final class Shell extends BorderPane {
         cabecera.setAlignment(Pos.CENTER_LEFT);
         cabecera.setPadding(new Insets(10, 16, 10, 16));
         return cabecera;
+    }
+
+    /**
+     * Banda de aviso cuando la instalacion esta en modo consulta (licencia vencida o periodo de
+     * prueba agotado). Solo informa; el bloqueo real esta en los servicios.
+     */
+    private Region construirAvisoLicencia() {
+        Label aviso = new Label();
+        aviso.getStyleClass().add("aviso-licencia");
+        try {
+            ServicioLicencia.EstadoLicencia estado = new ServicioLicencia().estado();
+            if (estado.modoConsulta()) {
+                aviso.setText("Modo consulta: " + (estado.motivo() == null
+                        ? "la licencia no esta vigente" : estado.motivo())
+                        + " No se pueden registrar ventas, compras ni comprobantes.");
+                aviso.setVisible(true);
+                aviso.setManaged(true);
+            }
+        } catch (RuntimeException e) {
+            aviso.setVisible(false);
+            aviso.setManaged(false);
+        }
+        return aviso;
     }
 
     private void recargarCajas() {

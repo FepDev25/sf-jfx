@@ -29,6 +29,7 @@ import ec.sfjfx.core.util.ValidacionExcepcion;
 /** Ventas de caja y punto de venta. */
 public final class ServicioVenta {
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final VentaRepositorio repo = new VentaRepositorio();
     private final InventarioRepositorio inv = new InventarioRepositorio();
     private final ClienteRepositorio clientes = new ClienteRepositorio();
@@ -66,6 +67,7 @@ public final class ServicioVenta {
     public long cobrar(SesionCaja sesion, long bodegaId, Long ventaIdReanudar, Long clienteId, String nota,
                        boolean preciosIncluyenIva, List<VentaDetalle> lineas, List<VentaPago> pagos,
                        BigDecimal descuentoGlobal, BigDecimal propina, Long autorizadoPorId) {
+        licencia.exigirOperacion("cobrar una venta");
         if (lineas == null || lineas.isEmpty()) {
             throw new ValidacionExcepcion("La venta no tiene items");
         }
@@ -138,6 +140,7 @@ public final class ServicioVenta {
 
     /** Anula una venta: repone stock si estaba pagada. */
     public void anular(long ventaId, long bodegaId) {
+        licencia.exigirOperacion("anular una venta");
         Venta v = porId(ventaId);
         if ("ANULADA".equals(v.estado())) {
             throw new ValidacionExcepcion("La venta ya esta anulada");

@@ -27,6 +27,10 @@ public final class ServicioEmpresa {
             throw new ec.sfjfx.core.util.ValidacionExcepcion("El email no es valido");
         }
         if (e.id() == null) {
+            if (repo.contar() > 0 && !new ServicioInstalacion().permiteMultiempresa()) {
+                throw new ec.sfjfx.core.util.ValidacionExcepcion(
+                        "La instalacion esta en modo UNICA_EMPRESA; no se pueden crear mas empresas");
+            }
             long id = repo.crear(e);
             auditoria.registrar("EMPRESA", "empresa", id, "CREAR", null, datos(e));
             return new Empresa(id, e.ruc(), e.razonSocial(), e.nombreComercial(), e.direccionMatriz(),

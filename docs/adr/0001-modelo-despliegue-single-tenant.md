@@ -1,6 +1,6 @@
 # ADR-0001 — Modelo de despliegue: single-tenant auto-instalable
 
-- **Estado:** `ACEPTADO` — Fases 0 y 1 implementadas; Fases 2–3 pendientes
+- **Estado:** `ACEPTADO` — Fases 0 y 1 implementadas; Fase 2 en curso; Fase 3 pendiente
 - **Fecha:** 2026-10-19
 - **Ámbito:** despliegue, persistencia, semillas, instalación y operación
 - **Relacionado:** [`../decisiones.md`](../decisiones.md) (Fase 14), [`../roadmap.md`](../roadmap.md) (Hito 12)
@@ -199,7 +199,7 @@ local del desarrollador.
 
 | Elemento | ¿Qué es? | ¿Se aplica en producción? | ¿Se distribuye con el producto? |
 |---|---|---|---|
-| `V1`–`V8` | Esquema versionado y evolución de la base. | **Sí**, siempre. | **Sí**. |
+| `V1`–`V9` | Esquema versionado y evolución de la base. | **Sí**, siempre. | **Sí**. |
 | `V2` (datos base) | Permisos, roles, unidades, impuestos, medios de pago y tipos de movimiento. | **Sí**, forma parte del sistema. | **Sí**. |
 | `SemillaDesarrollo` | Empresa demo, sucursales, bodegas, cajas, usuario `admin/admin`. | **No.** | **No.** Solo repositorio local. |
 | `SemillaDemo` | Datos masivos de demostración (productos, ventas, compras, etc.). | **No.** | **No.** Solo repositorio local. |
@@ -248,7 +248,7 @@ local.
 
 ## 6. Plan de implementación (Fases 0–3)
 
-> Estado: **Fases 0 y 1 implementadas (2026-10-19); Fases 2–3 no iniciadas.**
+> Estado: **Fases 0 y 1 implementadas (2026-10-19); Fase 2 en curso; Fase 3 no iniciada.**
 > Ninguna fase se considera ejecutada hasta que sus criterios de aceptación estén verificados y se
 > registre el cierre en el roadmap.
 
@@ -320,46 +320,56 @@ lista de precio inicial. 79 pruebas verdes en su cierre (77 `core` + 2 `dev`).
 
 **Fuera de alcance:** empaquetado nativo, panel de instancias y actualizaciones automáticas.
 
-### Fase 2 — Empaquetado y operación `[PENDIENTE]`
+### Fase 2 — Empaquetado y operación `[EN CURSO]`
 
 **Objetivo:** entregar un producto instalable y operable en campo.
 
-**Entregables:**
+**Implementado en esta etapa:**
 
-- **Instalador nativo para Windows y Linux** con **PostgreSQL incluido** (instancia local
-  administrada por el instalador: binarios, data directory, servicio, puerto y credenciales).
-- El instalador **excluye el módulo `dev`** y no ofrece semillas ni credenciales por defecto.
-- Alternativa **Docker Compose** (aplicación + PostgreSQL) para despliegues de servidor.
-- Ciclo de vida del PostgreSQL incluido: inicialización, arranque como servicio, respaldo,
-  actualizaciones menores y procedimiento para salto de versión mayor.
-- Respaldo y restauración probados (`pg_dump`/`pg_restore`) con historial y verificación.
-- Migraciones con bloqueo (advisory lock) para evitar ejecuciones concurrentes.
-- Pool de conexiones (por ejemplo HikariCP) en lugar de `DriverManager` por conexión.
-- Logs, versión visible, healthcheck y procedimiento de actualización/rollback.
-- **Actualización remota asistida:** servidor de updates, paquetes firmados, descarga desde la
-  aplicación, aprobación del técnico, respaldo previo, migraciones, reporte de resultado y
-  rollback. La instalación inicial sigue siendo manual.
-- **Licenciamiento perpetuo + mantenimiento anual:** formato de archivo firmado offline, ligado
-  al ID de instalación, edición, límites (sucursales/cajas) y vigencia de mantenimiento;
-  validación local con clave pública embebida; pantalla de licencia y herramienta interna de
-  emisión/renovación.
-- Documento de instalación para el técnico y checklist de puesta en marcha.
+- **Pool HikariCP** con configuración `db.pool.*`.
+- **Bloqueo de migraciones** con advisory lock para evitar ejecuciones concurrentes.
+- **Respaldo verificado**: `pg_dump` + `pg_restore --list`, con prueba real de restauración
+  sobre base temporal (91 tablas, `V1`–`V9`).
+- **CLI operativa**: `Arranque respaldo` (sin sesión de usuario, para tareas del sistema
+  operativo) y `Arranque salud` (healthcheck con código de salida 0/1).
+- **Registro con rotación** en `~/.sfjfx/logs/sfjfx-YYYY-MM-DD.log`, con límite de días
+  conservados y redirección de `System.out`/`System.err`.
+- **Estado de la instalación**: versión, entorno, PostgreSQL, esquema, licencia, salud y último
+  respaldo.
+- **Licencia perpetua + mantenimiento anual**: archivo firmado RSA/SHA-256, validación offline
+  contra `codigo_unico`, clave pública embebida en el build, pantalla de carga y herramienta
+  `LicenciaEmisor` en `dev`.
+- **Modo consulta** (decisión 14.12): con la licencia vencida o el periodo de prueba agotado se
+  bloquean ventas, compras, comprobantes y movimientos de stock, pero se sigue consultando y
+  exportando. Banda de aviso en la cabecera.
+- **Canal de actualización**: manifiesto firmado, verificación de firma, descarga y SHA-256.
+- **Plantillas de distribución**: `dist/README.md`, constructores y actualizadores Linux/Windows.
+- **Documentación operativa** con checklist, rollback y salto mayor de PostgreSQL.
+
+**Entregables pendientes de validación en entorno de release:**
+
+- Generar y firmar instaladores `app-image` Windows/Linux con PostgreSQL incluido.
+- Validar el ciclo de vida del PostgreSQL incluido (servicio, data directory, upgrades).
+- Ejecutar una actualización de punta a punta desde una versión anterior y su rollback.
 
 **Criterios de aceptación:**
 
 - [ ] Instalación completa en Windows y Linux siguiendo solo la documentación.
 - [ ] El instalador deja PostgreSQL operativo y la aplicación conectada sin intervención manual.
-- [ ] Respaldo y restauración verificados sobre una base con datos reales de prueba.
+- [x] Respaldo y restauración verificados sobre una base con datos reales de prueba.
 - [ ] Actualización remota asistida funciona desde una versión anterior con aprobación del
   técnico, respaldo previo y reporte de resultado.
 - [ ] Si una actualización falla, se puede restaurar el respaldo y volver a la versión anterior.
 - [ ] Actualización de versión aplica migraciones pendientes sin duplicar ni perder datos.
-- [ ] La actualización de la aplicación no fuerza un salto mayor de PostgreSQL sin respaldo y
+- [x] La actualización de la aplicación no fuerza un salto mayor de PostgreSQL sin respaldo y
   procedimiento explícito.
-- [ ] La licencia firmada offline se valida contra el ID de instalación y los límites declarados.
-- [ ] Si vence el mantenimiento, la aplicación sigue operando y solo se bloquean updates/soporte.
-- [ ] La instalación reporta versión, estado de la base, licencia y último respaldo.
-- [ ] Un fallo de migración no deja la base en estado inconsistente.
+- [x] La licencia firmada offline se valida contra el ID de instalación y los límites declarados.
+- [x] Sin licencia vigente la aplicación pasa a modo consulta tras el periodo de prueba, y
+  bloquea la operación comercial sin perder la consulta ni los datos.
+- [x] La instalación reporta versión, estado de la base, licencia y último respaldo.
+- [x] Un fallo de migración no deja la base en estado inconsistente (transacciones + bloqueo).
+- [x] El respaldo programado puede ejecutarse sin sesión de usuario (tarea del sistema operativo).
+- [x] Existe un healthcheck verificable con código de salida para monitorización.
 
 **Fuera de alcance:** panel central de clientes y multi-tenant compartido.
 
@@ -432,7 +442,19 @@ multi-tenant solo se reevaluará si se cumplen las condiciones de la sección 4A
 | 3 | Modo por defecto | **`UNICA_EMPRESA`**; `MULTIEMPRESA` se habilita explícitamente como opción avanzada. |
 | 4 | Semillas | **Nunca en el instalador ni en producción.** Solo herramienta local del desarrollador, ejecutada manualmente en su PC. |
 
-### 9.1 Licencia perpetua + mantenimiento anual
+### 9.1 Decisiones de despliegue (2026-10-20)
+
+| # | Tema | Decisión |
+|---|------|----------|
+| 1 | Alcance del producto | **Solo escritorio.** No se implementa modo servidor ni API. |
+| 2 | Formato de distribución | **`app-image`** como formato base para Windows y Linux. |
+| 3 | PostgreSQL incluido | **Sí**, con puerto libre detectado y credenciales aleatorias. |
+| 4 | Canal de actualizaciones | **Servidor HTTPS propio** con manifiesto firmado. |
+| 5 | Licencia vencida o ausente | **Modo consulta**: sin operación comercial, con consulta y datos intactos. |
+| 6 | Clave pública de licencias | **Embebida en el build**; la privada se custodia fuera del repositorio. |
+| 7 | Respaldos programados | **Tarea del sistema operativo** (`Arranque respaldo`), sin sesión de usuario. |
+
+### 9.2 Licencia perpetua + mantenimiento anual
 
 **Modelo comercial**
 
@@ -440,29 +462,28 @@ multi-tenant solo se reevaluará si se cumplen las condiciones de la sección 4A
 - Mantenimiento anual renovable que incluye actualizaciones, nuevas versiones y soporte.
 - La edición (`SUPERMERCADO`, `MINIMERCADO`, `TIENDA`) y los límites (sucursales, cajas) se
   declaran en la licencia.
-- El vencimiento del mantenimiento **no deshabilita** la aplicación: detiene actualizaciones y
-  soporte.
+- El mantenimiento vencido **no bloquea** la operación; detiene actualizaciones y soporte.
 
 **Contenido del archivo de licencia**
 
 | Campo | Uso |
 |---|---|
-| `id_instalacion` | Vincula la licencia a una instalación concreta. |
+| `versionLicencia` | Formato/versionado del archivo de licencia (hoy `1`). |
+| `idInstalacion` | Código único de la instalación (`instalacion.codigo_unico`). |
 | `cliente` | Nombre comercial del titular. |
 | `ruc` | Identificación fiscal del titular. |
 | `edicion` | `SUPERMERCADO`, `MINIMERCADO` o `TIENDA`. |
-| `max_sucursales` / `max_cajas` | Límites declarados. |
-| `emitida_en` | Fecha de emisión. |
-| `mantenimiento_hasta` | Fin del período de mantenimiento contratado. |
-| `firma` | Firma digital del payload con la clave privada del proveedor. |
+| `maxSucursales` / `maxCajas` | Límites declarados. |
+| `emitidaEn` | Fecha de emisión. |
+| `mantenimientoHasta` | Fin del período de mantenimiento contratado. |
+| `firma` | Firma digital RSA/SHA-256 del payload con la clave privada del proveedor. |
 
 **Validación**
 
-- La aplicación valida la firma, el `id_instalacion` y los límites con una clave pública
-  embebida.
+- La aplicación valida la firma, el `idInstalacion` y los límites con la clave pública embebida.
 - No requiere conexión a internet.
-- Si el archivo falta, no coincide o está corrupto, se aplica un período de gracia definido en la
-  Fase 2. Nunca se eliminan ni se ocultan los datos del cliente.
+- Si el archivo falta, no coincide o está corrupto, se aplica un período de prueba o gracia
+  definido en la Fase 2. Nunca se eliminan ni se ocultan los datos del cliente.
 - La renovación consiste en reemplazar el archivo de licencia; no requiere reinstalar.
 - La generación se hace con una herramienta interna. La clave privada nunca se distribuye con la
   aplicación.
@@ -471,26 +492,46 @@ multi-tenant solo se reevaluará si se cumplen las condiciones de la sección 4A
 
 | Estado | Operación y ventas | Actualizaciones | Soporte |
 |---|---|---|---|
-| Licencia válida y mantenimiento vigente | Sí | Sí | Sí |
-| Licencia válida, mantenimiento vencido | Sí | No | No (renovable) |
-| Licencia ausente o inválida | Según período de gracia de la Fase 2; sin pérdida de datos | No | No |
+| Licencia vigente | Sí | Sí | Sí |
+| Licencia válida, mantenimiento vencido (en gracia) | Sí | No | No (renovable) |
+| Licencia válida, mantenimiento vencido (vencida la gracia) | No — modo consulta | No | No |
+| Sin licencia (en periodo de prueba) | Sí | No | No |
+| Sin licencia (agotado el periodo de prueba) | No — modo consulta | No | No |
 
 **Regla de oro:** la licencia no secuestra datos ni bloquea la caja por un problema
-administrativo. Si se necesita enforcement, se aplica como aviso y, tras el período de gracia,
-como modo consulta. El detalle exacto se define en la Fase 2.
+administrativo más allá del período de gracia. En modo consulta se conserva el acceso a la
+información y a los datos ya registrados.
 
-### 9.2 Actualización remota asistida
+### 9.3 Actualización remota asistida
 
 1. El proveedor publica un manifiesto firmado y un paquete `.zip`.
-2. En la vista de actualizaciones, el técnico consulta el canal.
+2. En **Configuración → Actualizaciones**, el técnico consulta el canal.
 3. La aplicación verifica la firma del manifiesto y descarga el paquete.
 4. La aplicación verifica el SHA-256 del paquete.
-5. El técnico cierra la aplicación y ejecuta el instalador/script de actualización.
+5. El técnico cierra la aplicación y ejecuta `actualizar.sh`/`actualizar.ps1`.
 6. El script respalda, reemplaza la aplicación, aplica migraciones y permite rollback.
 
-La instalación inicial sigue siendo manual.
+El canal solo descarga y verifica. La aplicación del paquete es una acción explícita del técnico:
+no hay actualización desatendida por flota.
 
-### 9.3 Cierre
+### 9.4 Pendientes para la próxima sesión
+
+Detalle operativo en [`../roadmap.md`](../roadmap.md#pendientes-para-la-próxima-sesión). Resumen:
+
+1. **Cerrar la Fase 2 en entorno de release:** `app-image` de Linux y Windows, PostgreSQL
+   portátil como servicio, instalación limpia verificada y firma de paquetes.
+2. **Actualización de punta a punta:** publicar el canal HTTPS con manifiesto firmado, ejecutar el
+   actualizador con respaldo previo y probar el rollback.
+3. **Decisiones de producto:** ciclo de incompatibleidad de esquema (migraciones *forward-only*),
+   valores comerciales de la gracia y el periodo de prueba, aplicación de los límites de licencia
+   en la UI y artefacto independiente del emisor para el proveedor.
+4. **Verificaciones:** respaldo con datos reales de cliente, modo consulta de extremo a extremo,
+   migraciones desde el jar instalado, concurrencia del pool y rotación de logs con volumen alto.
+5. **Deuda técnica menor:** trazas estructuradas en el log, advisory lock ante caída de red,
+   orden de versiones de dos dígitos, formato único de la CLI y cobertura de las 91 tablas en el
+   modelo de datos.
+
+### 9.5 Cierre
 
 No hay preguntas abiertas para el alcance de este ADR. Cualquier cambio futuro se registra como un
 nuevo ADR o como una nueva fila en [`../decisiones.md`](../decisiones.md).

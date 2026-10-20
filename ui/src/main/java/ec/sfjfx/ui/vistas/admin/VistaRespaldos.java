@@ -40,6 +40,9 @@ public final class VistaRespaldos extends VistaLista<Respaldo> {
             accion("Respaldar ahora", true, v -> respaldar());
             accion("Restaurar", false, v -> v.seleccion().ifPresent(this::restaurar));
         }
+        if (Perm.tiene("respaldo.ver")) {
+            accion("Verificar", false, v -> v.seleccion().ifPresent(this::verificar));
+        }
         if (Perm.tiene("respaldo.editar")) {
             accion("Programar", false, v -> programar());
         }
@@ -72,6 +75,14 @@ public final class VistaRespaldos extends VistaLista<Respaldo> {
                     Alertas.info("Programacion", "La programacion de respaldos fue actualizada.");
                 })
                 .mostrar();
+    }
+
+    private void verificar(Respaldo r) {
+        if (r.rutaArchivo() == null || r.rutaArchivo().isBlank()) {
+            Alertas.advertencia("Verificar", "El registro no tiene un archivo asociado.");
+            return;
+        }
+        enSegundoPlano("verificar", () -> servicio.verificar(Path.of(r.rutaArchivo())));
     }
 
     private void restaurar(Respaldo r) {

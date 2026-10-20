@@ -12,6 +12,7 @@ import ec.sfjfx.core.util.ValidacionExcepcion;
 
 public final class ServicioAjuste {
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final AjusteInventarioRepositorio repo = new AjusteInventarioRepositorio();
     private final ServicioInventario inventario = new ServicioInventario();
     private final ServicioAuditoria auditoria = new ServicioAuditoria();
@@ -26,6 +27,7 @@ public final class ServicioAjuste {
 
     /** Registra y aplica un ajuste (entrada o salida) en una sola transaccion. */
     public long aplicar(long bodegaId, String tipo, String motivo, String nota, List<AjusteDetalle> detalles) {
+        licencia.exigirOperacion("aplicar un ajuste de inventario");
         if (detalles == null || detalles.isEmpty()) {
             throw new ValidacionExcepcion("El ajuste no tiene items");
         }

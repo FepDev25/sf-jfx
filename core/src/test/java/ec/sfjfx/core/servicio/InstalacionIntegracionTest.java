@@ -107,6 +107,8 @@ class InstalacionIntegracionTest {
         Instalacion instalacion = new InstalacionRepositorio().obtener().orElseThrow();
         assertEquals("Instalacion de prueba", instalacion.nombre());
         assertEquals(Instalacion.MODO_UNICA_EMPRESA, instalacion.modo());
+        assertTrue(instalacion.codigoUnico() != null && !instalacion.codigoUnico().isBlank(),
+                "Debe tener un codigo unico para licencias");
         assertTrue(Integer.parseInt(instalacion.versionEsquema()) >= 8,
                 "Debe registrar la version de esquema aplicada");
         assertFalse(servicio.permiteMultiempresa());

@@ -176,17 +176,26 @@ Estados: `DECIDIDO` · `PENDIENTE` · `REEVALUABLE`
 | 14.1 | Modelo de despliegue: **single-tenant auto-instalable** | DECIDIDO | Una instalación atiende a un operador/cliente. No se adopta multi-tenant compartido. Detalle en [`adr/0001-modelo-despliegue-single-tenant.md`](adr/0001-modelo-despliegue-single-tenant.md). |
 | 14.2 | Persistencia: **una base PostgreSQL por instalación** (modelo silo) | DECIDIDO | Si varios clientes comparten servidor PostgreSQL, cada uno usa una base independiente. |
 | 14.3 | `empresa` = entidad legal dentro de la instalación, **no tenant SaaS** | DECIDIDO | Se conserva la jerarquía `empresa → sucursal → bodega` para cadenas y holdings. |
-| 14.4 | Semillas: **solo desarrollo local, nunca en el instalador ni en producción** | DECIDIDO | Las migraciones `V1`–`V8` y los datos base de `V2` sí se aplican. `SemillaDesarrollo` y `SemillaDemo` se retiran del arranque automático y del artefacto de producción; solo se ejecutan manualmente en la PC del desarrollador. |
+| 14.4 | Semillas: **solo desarrollo local, nunca en el instalador ni en producción** | DECIDIDO | Las migraciones `V1`–`V9` y los datos base de `V2` sí se aplican. `SemillaDesarrollo` y `SemillaDemo` se retiran del arranque automático y del artefacto de producción; solo se ejecutan manualmente en la PC del desarrollador. |
 | 14.5 | Primer arranque: **asistente de instalación** | DECIDIDO | Crea empresa/sucursal/bodega/caja/administrador con contraseña elegida por el cliente. Sin `admin/admin` ni opción de cargar semillas en producción. |
 | 14.6 | Empaquetado y operación: **instalador nativo para Windows y Linux con PostgreSQL incluido** | DECIDIDO | Fase 2: instalador nativo con PostgreSQL local administrado; Docker Compose como alternativa de servidor; respaldo, migraciones con bloqueo, logs y healthcheck. |
 | 14.7 | SaaS futuro: **instancias gestionadas + panel de control**, no base compartida | DECIDIDO | Reevaluar multi-tenant compartido solo si se cumplen las condiciones de escala del ADR. |
 | 14.8 | Modo por defecto: **`UNICA_EMPRESA`**; `MULTIEMPRESA` explícito | DECIDIDO | El multiempresa queda como opción avanzada para cadenas y holdings. |
 | 14.9 | Actualizaciones: **instalación manual + actualización remota asistida** | DECIDIDO | La instalación inicial la hace un técnico. Las actualizaciones se descargan de un servidor, se validan por firma y el técnico las aprueba. |
 | 14.10 | Licenciamiento: **perpetuo por instalación + mantenimiento anual** | DECIDIDO | Archivo de licencia firmado offline, ligado al ID de instalación, edición y límites (sucursales/cajas). |
+| 14.11 | Distribución: **solo escritorio**, instalador `app-image` | DECIDIDO | No se implementa modo servidor ni API. Se distribuye un `app-image` (Windows y Linux). |
+| 14.12 | Licencia vencida: **modo consulta** | DECIDIDO | Sin licencia válida (tras el periodo de prueba) o con mantenimiento vencido (tras la gracia), se bloquean ventas, compras, comprobantes y movimientos de stock; se mantiene la consulta, la exportación y el acceso a los datos. |
+| 14.13 | Canal de actualizaciones: **servidor HTTPS propio** | DECIDIDO | Manifiesto firmado por el proveedor; el cliente verifica firma y SHA-256. Alternativa `file:` para instalaciones sin salida a internet. |
+| 14.14 | Clave pública de licencias: **embebida en el build** | DECIDIDO | `core/src/main/resources/licencia/public-key.pem` viaja con la aplicación. La clave privada se custodia fuera del repositorio. |
+| 14.15 | Respaldos programados: **tarea del sistema operativo** | DECIDIDO | `Arranque respaldo` genera y verifica el respaldo sin sesión de usuario, para cron o Task Scheduler con la aplicación cerrada. |
+| 14.16 | PostgreSQL incluido: **puerto libre detectado y credenciales aleatorias** | DECIDIDO | El instalador detecta un puerto libre y genera credenciales aleatorias con permisos restringidos en `sfjfx.properties`. |
+| 14.17 | Healthcheck y logs: **comando de salida + archivo rotado** | DECIDIDO | `Arranque salud` devuelve código 0/1 para monitorización; el registro rota por día en `~/.sfjfx/logs`. |
 
-**Implementación:** **Fases 0 y 1 completadas (2026-10-19); Fases 2–3 pendientes.** El arranque
-solo aplica migraciones, las semillas viven en el módulo `dev` y el primer arranque se resuelve
-con el asistente (`V8`). El plan se detalla en el ADR-0001 (Fases 0–3) y en el
+**Implementación:** **Fases 0 y 1 completadas (2026-10-19); Fase 2 en curso.** El arranque
+solo aplica migraciones, las semillas viven en el módulo `dev`, el primer arranque se resuelve
+con el asistente (`V8`) y la base operativa de Fase 2 incluye HikariCP, advisory lock, respaldo
+verificado, CLI de respaldo/salud, registro con rotación, licencia offline, modo consulta y canal
+de updates firmado. Fase 3 pendiente. El plan se detalla en el ADR-0001 (Fases 0–3) y en el
 [Hito 12](roadmap.md#hito-12--despliegue-auto-instalable-pendiente) del roadmap.
 
 ---
@@ -194,6 +203,6 @@ con el asistente (`V8`). El plan se detalla en el ADR-0001 (Fases 0–3) y en el
 ## Estado del brainstorming
 
 **Alcance funcional cerrado.** Las fases 0–13 están cerradas. La Fase 14 (despliegue) tiene sus
-decisiones aceptadas; sus **Fases 0 y 1 están implementadas** y las Fases 2–3 se ejecutarán en el
-Hito 12, sin abrir nuevas funcionalidades de negocio.
+decisiones aceptadas; sus **Fases 0 y 1 están implementadas**, la **Fase 2 está en curso** y la
+Fase 3 se ejecutará en el Hito 12, sin abrir nuevas funcionalidades de negocio.
 Cambios futuros se registran aquí como nuevas filas o una nueva fase.

@@ -17,6 +17,7 @@ import ec.sfjfx.core.util.ValidacionExcepcion;
 
 public final class ServicioDevolucionVenta {
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final DevolucionVentaRepositorio repo = new DevolucionVentaRepositorio();
     private final VentaRepositorio ventas = new VentaRepositorio();
     private final ServicioInventario inventario = new ServicioInventario();
@@ -32,6 +33,7 @@ public final class ServicioDevolucionVenta {
 
     /** Registra una devolucion total o parcial y repone stock de los items marcados. */
     public long registrar(long ventaId, long bodegaId, String motivo, List<DevolucionVentaDetalle> detalles) {
+        licencia.exigirOperacion("registrar una devolucion de venta");
         if (detalles == null || detalles.isEmpty()) {
             throw new ValidacionExcepcion("La devolucion no tiene items");
         }

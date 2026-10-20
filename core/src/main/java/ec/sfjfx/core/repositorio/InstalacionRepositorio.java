@@ -13,7 +13,7 @@ import ec.sfjfx.core.modelo.Instalacion;
 public final class InstalacionRepositorio {
 
     private static final String COLUMNAS =
-            "id, nombre, modo, version_esquema, creado_en, actualizado_en";
+            "id, codigo_unico, nombre, modo, version_esquema, creado_en, actualizado_en";
 
     public Optional<Instalacion> obtener() {
         return Bd.consulta(this::obtener);
@@ -55,6 +55,7 @@ public final class InstalacionRepositorio {
     private Instalacion mapear(ResultSet rs) throws SQLException {
         return new Instalacion(
                 rs.getLong("id"),
+                rs.getString("codigo_unico"),
                 rs.getString("nombre"),
                 rs.getString("modo"),
                 rs.getString("version_esquema"),

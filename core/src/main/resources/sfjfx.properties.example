@@ -11,6 +11,11 @@ db.esquema=public
 # --- Aplicacion ---
 app.entorno=dev
 
+# --- Pool de conexiones (opcional) ---
+# db.pool.maximo=10
+# db.pool.minimo=1
+# db.pool.timeout=30000
+
 # --- Respaldos (opcional; se pueden configurar desde la UI) ---
 # respaldo.directorio=~/.sfjfx/respaldos
 # respaldo.programado=false

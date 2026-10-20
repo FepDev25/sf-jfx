@@ -15,6 +15,10 @@ Rol que ve cada vista entre paréntesis. `[flag]` = módulo que debe estar activ
 - **Listados** — paginación en servidor, búsqueda con `Ctrl+F` y actualización con `F5` en productos, ventas, clientes, proveedores y comprobantes; formato monetario unificado.
 - **Bloqueo por inactividad / cierre de sesión**. (Todos)
 - **Centro de notificaciones / alertas** — bajo stock, por vencer, sesiones de caja abiertas, respaldos fallidos. (Admin/Gerente)
+- **Estado de la instalación** — versión, modo (`UNICA_EMPRESA`/`MULTIEMPRESA`), salud, último respaldo y actualización. (Admin · Fase 2 implementada)
+- **Actualizaciones** — versiones disponibles, consulta de manifiesto firmado, descarga verificada y aprobación del técnico. (Admin/Técnico · Fase 2 implementada)
+- **Licencia y mantenimiento** — edición, límites (sucursales/cajas), vigencia del mantenimiento y carga offline. (Admin · Fase 2 implementada)
+- **Modo consulta** — aviso en la cabecera cuando la licencia no está vigente: se bloquean ventas, compras, comprobantes y movimientos de stock, pero se puede consultar y exportar. (Todos · Fase 2 implementada)
 
 ## Modo Caja (POS) — `[POS]`
 - **POS principal** — fullscreen, carrito grande, total visible, teclado, atajos F-keys, catálogo paginado (50 por página), selección + cantidad editable + **Agregar**, búsqueda por nombre/código y escaneo. (Cajero)

@@ -2,6 +2,7 @@ package ec.sfjfx.core.db;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +37,7 @@ public final class MigradorEsquema {
 
     private static final String DIRECTORIO = "db/migracion";
     private static final String TABLA_CONTROL = "migracion_esquema";
+    private static final long BLOQUEO_MIGRACION = 824671234567L;
 
     private final Connection conexion;
 
@@ -45,19 +47,44 @@ public final class MigradorEsquema {
 
     /** Aplica todas las migraciones pendientes. */
     public void migrar() throws SQLException, IOException {
-        crearTablaControl();
-        Set<String> aplicadas = versionesAplicadas();
+        if (!adquirirBloqueo()) {
+            throw new SQLException("Otra instancia esta aplicando migraciones sobre esta base de datos");
+        }
+        try {
+            crearTablaControl();
+            Set<String> aplicadas = versionesAplicadas();
 
-        List<RecursoMigracion> pendientes = new ArrayList<>();
-        for (RecursoMigracion recurso : descubrirRecursos()) {
-            if (!aplicadas.contains(recurso.version())) {
-                pendientes.add(recurso);
+            List<RecursoMigracion> pendientes = new ArrayList<>();
+            for (RecursoMigracion recurso : descubrirRecursos()) {
+                if (!aplicadas.contains(recurso.version())) {
+                    pendientes.add(recurso);
+                }
+            }
+            pendientes.sort(Comparator.comparing(RecursoMigracion::version, MigradorEsquema::compararVersiones));
+
+            for (RecursoMigracion recurso : pendientes) {
+                aplicar(recurso);
+            }
+        } finally {
+            liberarBloqueo();
+        }
+    }
+
+    private boolean adquirirBloqueo() throws SQLException {
+        try (PreparedStatement ps = conexion.prepareStatement("SELECT pg_try_advisory_lock(?)")) {
+            ps.setLong(1, BLOQUEO_MIGRACION);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getBoolean(1);
             }
         }
-        pendientes.sort(Comparator.comparing(RecursoMigracion::version, MigradorEsquema::compararVersiones));
+    }
 
-        for (RecursoMigracion recurso : pendientes) {
-            aplicar(recurso);
+    private void liberarBloqueo() {
+        try (PreparedStatement ps = conexion.prepareStatement("SELECT pg_advisory_unlock(?)")) {
+            ps.setLong(1, BLOQUEO_MIGRACION);
+            ps.execute();
+        } catch (SQLException ignored) {
+            // Si la conexion ya se cerro, PostgreSQL libera el bloqueo de sesion.
         }
     }
 
@@ -182,7 +209,7 @@ public final class MigradorEsquema {
     private List<RecursoMigracion> descubrirEnJar(URL directorio) throws IOException {
         List<RecursoMigracion> recursos = new ArrayList<>();
         String rutaJar = directorio.getPath().substring(0, directorio.getPath().indexOf('!'));
-        try (JarFile jar = new JarFile(Path.of(rutaJar).toFile())) {
+        try (JarFile jar = new JarFile(Path.of(URI.create(rutaJar)).toFile())) {
             var entradas = jar.entries();
             while (entradas.hasMoreElements()) {
                 JarEntry entrada = entradas.nextElement();
@@ -194,7 +221,11 @@ public final class MigradorEsquema {
                     continue;
                 }
                 String simple = nombre.substring(nombre.lastIndexOf('/') + 1);
-                RecursoMigracion recurso = interpretar(simple, new URL(directorio, simple));
+                String base = directorio.toExternalForm();
+                if (!base.endsWith("/")) {
+                    base += "/";
+                }
+                RecursoMigracion recurso = interpretar(simple, new URL(base + simple));
                 if (recurso != null) {
                     recursos.add(recurso);
                 }

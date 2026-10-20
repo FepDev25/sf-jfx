@@ -68,6 +68,19 @@ public final class RespaldoRepositorio {
         });
     }
 
+    public Optional<Respaldo> ultimo(long empresaId) {
+        return Bd.consulta(c -> {
+            String sql = "SELECT " + COLUMNAS + " FROM respaldo WHERE empresa_id = ? "
+                    + "ORDER BY creado_en DESC LIMIT 1";
+            try (PreparedStatement ps = c.prepareStatement(sql)) {
+                ps.setLong(1, empresaId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next() ? Optional.of(mapear(rs)) : Optional.empty();
+                }
+            }
+        });
+    }
+
     public void eliminar(long id, long empresaId) {
         Bd.transaccion(c -> {
             try (PreparedStatement ps = c.prepareStatement(

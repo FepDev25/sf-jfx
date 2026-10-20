@@ -17,7 +17,9 @@ import ec.sfjfx.core.seguridad.SeguridadPass;
  *
  * <p><strong>Herramienta de desarrollo.</strong> No forma parte del producto
  * instalable ni del artefacto de produccion. Se ejecuta manualmente en la PC
- * del desarrollador, nunca en una instalacion de cliente.
+ * del desarrollador, nunca en una instalacion de cliente. Requiere que
+ * {@code core} este instalado en el repositorio local
+ * ({@code mvn -pl core install -DskipTests}).
  *
  * <p>Es idempotente: si la empresa demo ya existe, no hace nada.
  * Credenciales por defecto: {@code admin / admin} (PIN {@code 1234}).

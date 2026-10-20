@@ -15,10 +15,17 @@ Motor: **PostgreSQL**. Acceso: **JDBC**.
 ## 1. Núcleo / Organización
 
 ### `instalacion`
-`id`, `nombre`, `modo` (`UNICA_EMPRESA` | `MULTIEMPRESA`), `version_esquema`, `creado_en`,
-`actualizado_en`. Metadatos de la instalación. Una base PostgreSQL por instalación; esta tabla
-**no** convierte el modelo en multi-tenant compartido. La fila la crea el asistente de primer
-arranque (`V8`).
+`id`, `codigo_unico` (UUID para licencias), `nombre`, `modo` (`UNICA_EMPRESA` | `MULTIEMPRESA`),
+`version_esquema`, `creado_en`, `actualizado_en`. Metadatos de la instalación. Una base
+PostgreSQL por instalación; esta tabla **no** convierte el modelo en multi-tenant compartido. La
+fila la crea el asistente de primer arranque (`V8`); el código único se agrega en `V9`.
+
+> **Licencia:** se guarda como archivo firmado offline en `~/.sfjfx/licencia/`. La tabla no
+> persiste edición, límites ni vigencia; esos datos se leen del archivo validado.
+>
+> **Modo consulta:** sin licencia vigente, los servicios de venta, compra, comprobante y
+> movimientos de stock rechazan la operación con un mensaje explícito. Las consultas, reportes y
+> exportaciones siguen disponibles.
 
 ### `empresa`
 `id`, `ruc`, `razon_social`, `nombre_comercial`, `direccion_matriz`, `telefono`, `email`, `logo_path`, `contribuyente_especial` (bool), `obligado_llevar_contabilidad` (bool), `regimen` (GENERAL | RIMPE_EMPRENDEDOR | RIMPE_NEGOCIO_POPULAR), `moneda` (default `USD`), `activo`, auditoría.
@@ -334,6 +341,7 @@ arranque (`V8`).
 | `V6` | `respaldo.detalle`. |
 | `V7` | Índices de rendimiento para ventas, inventario, CxC/CxP, comprobantes, auditoría y paginación. |
 | `V8` | `instalacion` (metadatos del primer arranque). |
+| `V9` | `instalacion.codigo_unico` (identificador para licencias offline). |
 
 ## 10. Relación rápida de cardinalidades clave
 - Empresa 1—N Sucursal 1—N Bodega; Sucursal 1—N Caja.

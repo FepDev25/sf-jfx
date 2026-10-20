@@ -263,6 +263,15 @@
     -fx-border-color: transparent;
 }
 
+.aviso-licencia {
+    -fx-background-color: #fef3c7;
+    -fx-text-fill: #92400e;
+    -fx-font-size: 12px;
+    -fx-padding: 6 16 6 16;
+    -fx-border-color: transparent transparent -sf-borde transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
 /* ----- Formularios y secciones ----- */
 .titulo-seccion {
     -fx-font-size: 18px;

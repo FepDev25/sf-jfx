@@ -266,20 +266,31 @@ consecuencias están en el [ADR-0001](adr/0001-modelo-despliegue-single-tenant.m
 empresa/sucursal/bodega/caja/administrador, módulos por perfil, secuencias SRI, configuración y
 lista de precio inicial. 79 pruebas verdes (77 `core` + 2 `dev`).
 
-### Fase 2 — Empaquetado y operación `[PENDIENTE]`
+### Fase 2 — Empaquetado y operación `[EN CURSO]`
 
-- [ ] Instalador nativo para **Windows y Linux** con **PostgreSQL incluido**.
+- [ ] Instalador `app-image` para **Windows y Linux** con **PostgreSQL incluido**.
 - [ ] El instalador excluye el módulo `dev` y no ofrece semillas.
-- [ ] PostgreSQL local administrado: inicialización, servicio, puerto, credenciales y data directory.
-- [ ] Alternativa Docker Compose (aplicación + PostgreSQL) para despliegues de servidor.
-- [ ] Respaldo/restauración probados (`pg_dump`/`pg_restore`) con historial y verificación.
-- [ ] Migraciones con bloqueo (advisory lock) y actualización/rollback documentados.
-- [ ] Actualización de la aplicación separada de saltos mayores de PostgreSQL.
-- [ ] Pool de conexiones, logs, versión visible y healthcheck.
+- [ ] PostgreSQL local administrado: inicialización, servicio, puerto libre, credenciales aleatorias y data directory.
+- [x] Respaldo/restauración probados (`pg_dump`/`pg_restore`) con historial y verificación.
+- [x] Migraciones con bloqueo (advisory lock) y actualización/rollback documentados.
+- [x] Actualización de la aplicación separada de saltos mayores de PostgreSQL.
+- [x] Pool de conexiones HikariCP y versión visible.
+- [x] Estado de la instalación: versión, PostgreSQL, esquema, licencia, salud y último respaldo.
+- [x] Registro con rotación diaria y healthcheck con código de salida (`Arranque salud`).
+- [x] Respaldo programado sin sesión de usuario (`Arranque respaldo`) para tareas del SO.
 - [ ] Instalación completa en Windows y Linux siguiendo solo la documentación.
-- [ ] Actualización remota asistida: servidor de updates, paquetes firmados, aprobación del técnico, respaldo y rollback.
-- [ ] Licencia perpetua + mantenimiento anual: archivo firmado offline, validación por `id_instalacion`, edición/límites y pantalla de licencia.
-- [ ] Comportamiento ante mantenimiento vencido: la operación y los datos siguen disponibles; solo se detienen updates/soporte.
+- [x] Canal de actualización: manifiesto firmado, descarga y verificación SHA-256.
+- [ ] Actualización remota asistida de punta a punta: aplicación del paquete, aprobación del técnico y rollback probado.
+- [x] Licencia perpetua + mantenimiento anual: archivo firmado offline, validación por `codigo_unico`, edición/límites y pantalla de licencia.
+- [x] Modo consulta: sin licencia vigente se bloquea la operación comercial y se conservan datos y consultas.
+- [x] Clave pública embebida en el build; la privada se custodia fuera del repositorio.
+
+**Avance Fase 2 (2026-10-20):** HikariCP, advisory lock, respaldo verificado y restauración real
+sobre base temporal (91 tablas, `V1`–`V9`), CLI `respaldo`/`salud`, registro con rotación,
+estado de instalación, licencia offline con emisor en `dev` y clave pública embebida, modo
+consulta, canal de updates firmado y plantillas `dist/` para Linux/Windows. 86 pruebas verdes
+(83 `core` + 3 `dev`). Pendiente: generar/firmar instaladores reales, validar actualización y
+rollback de punta a punta y PostgreSQL incluido en campo.
 
 ### Fase 3 (opcional) — Gestión de instancias `[PENDIENTE]`
 
@@ -306,6 +317,61 @@ automática.
 
 ---
 
+## Pendientes para la próxima sesión
+
+Trabajo que quedó abierto, en orden de ejecución recomendado.
+
+### 1. Cerrar la Fase 2 (requiere entorno de release)
+
+| # | Tarea | Depende de |
+|---|-------|------------|
+| 1.1 | Generar el `app-image` de Linux con `jpackage` y validar que JavaFX arranca desde él | JDK 21 con `jpackage`, `PG_HOME` |
+| 1.2 | Empaquetar PostgreSQL portátil y script de primer arranque (`initdb`, usuario de sistema, `systemd`) | Distribución PostgreSQL portátil |
+| 1.3 | Validar la instalación completa en una máquina limpia siguiendo `dist/README.md` | 1.1 y 1.2 |
+| 1.4 | Replicar el proceso en Windows (`app-image` + registro de servicio de PostgreSQL) | Máquina Windows de prueba |
+| 1.5 | Firmar los paquetes (código de Windows, clave de actualizaciones) | Certificados del proveedor |
+
+### 2. Actualización de punta a punta
+
+| # | Tarea | Depende de |
+|---|-------|------------|
+| 2.1 | Publicar el canal HTTPS con manifiesto firmado y paquete de prueba | 1.1 |
+| 2.2 | Probar la descarga y verificación en la UI de Actualizaciones | 2.1 |
+| 2.3 | Ejecutar el actualizador (`dist/*/actualizar.*`) con respaldo previo y migraciones | 1.3 |
+| 2.4 | Probar el rollback: restaurar jars y respaldo de la base | 2.3 |
+| 2.5 | Definir el comportamiento ante migraciones *forward-only* incompatibles con la versión anterior | Decisión de producto |
+
+### 3. Decisiones de producto pendientes
+
+- **Ciclo de incompatibleidad de esquema.** Si una migración no es reversible, hay que documentar
+  que el rollback de aplicación exige restaurar la base, o bien aplicar una migración correctiva.
+- **Período de gracia real.** `licencia.gracia.dias` y `licencia.prueba.dias` están en 30 días por
+  defecto; falta definir los valores comerciales y si se aplican por edición.
+- **Límites de la licencia.** `maxSucursales` y `maxCajas` se validan en el archivo, pero
+  todavía **no se aplican** como restricción en la UI. Decidir si se avisa o se bloquea.
+- **Emisor de licencias como artefacto independiente.** Hoy vive en el módulo `dev`; falta
+  decidir si se entrega una herramienta de línea de comandos aparte al proveedor.
+
+### 4. Verificaciones pendientes
+
+- [ ] Respaldo y restauración sobre una base con **datos reales de cliente**, no solo de prueba.
+- [ ] Modo consulta verificado de extremo a extremo en la UI (bloqueo del POS y aviso de cabecera).
+- [ ] Migraciones ejecutadas **desde el jar instalado**, no solo desde `target/classes`.
+- [ ] Comportamiento del pool con muchas conexiones concurrentes (caja y reportes simultáneos).
+- [ ] Rotación de logs con volumen alto y verificación del consumo de disco.
+
+### 5. Deuda técnica menor
+
+- [ ] `ServicioLog` no captura trazas: solo líneas de texto. Considerar formato estructurado.
+- [ ] El advisory lock es de sesión: si la conexión se pierde, PostgreSQL lo libera. Verificar el
+  comportamiento ante caída de red durante una migración.
+- [ ] `MigradorEsquema` ordena por versión numérica; conviene validar el orden con versiones de
+  dos dígitos (`V10` frente a `V9`).
+- [ ] Consolidar los mensajes de la CLI en un único formato y documentarlos en `dist/README.md`.
+- [ ] Revisar que las 91 tablas siguen cubiertas por `docs/modelo-datos.md`.
+
+---
+
 ## Registro de cierre
 
 | Hito | Fecha de cierre | Notas |
@@ -323,6 +389,6 @@ automática.
 | 10 | 2026-10-16 | Administración: dispositivos (impresoras/lector/balanza/gaveta), respaldo y restauración con programación e historial (`V6`), perfiles de instalación, importación CSV/XLSX de clientes y proveedores con vista previa, consola de migraciones. 49 pruebas verdes. |
 | 11 | 2026-10-16 | Pulido y aseguramiento: paginación en servidor (productos, ventas, clientes, proveedores, comprobantes), índices (`V7`), atajos F5/Ctrl+F y POS F7/F9, descuento por línea con PIN, venta rápida, accesibilidad y foco en formularios, formato monetario unificado, pruebas fiscales, PPP, promociones, autorización, caja y paginación. 72 pruebas verdes. |
 
-> **Hito 12:** Fases 0 y 1 cerradas el 2026-10-19; Fases 2–3 pendientes. El hito completo se
-> registrará cuando se completen y verifiquen todas sus fases según el
+> **Hito 12:** Fases 0 y 1 cerradas el 2026-10-19; Fase 2 en curso; Fase 3 pendiente. El hito
+> completo se registrará cuando se completen y verifiquen todas sus fases según el
 > [ADR-0001](adr/0001-modelo-despliegue-single-tenant.md).

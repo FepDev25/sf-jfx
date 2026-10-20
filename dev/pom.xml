@@ -28,13 +28,17 @@
         </dependency>
     </dependencies>
 
+    <properties>
+        <exec.mainClass>ec.sfjfx.dev.SemillaDemo</exec.mainClass>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ec.sfjfx.dev.SemillaDemo</mainClass>
+                    <mainClass>${exec.mainClass}</mainClass>
                 </configuration>
             </plugin>
         </plugins>

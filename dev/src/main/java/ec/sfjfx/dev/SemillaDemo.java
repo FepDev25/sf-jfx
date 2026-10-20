@@ -33,7 +33,10 @@ import ec.sfjfx.core.sri.ClaveAcceso;
  * del desarrollador, nunca en una instalacion de cliente.
  *
  * <p>Es idempotente mediante la clave de configuracion {@code demo.seed_version}.
- * Se ejecuta con {@code mvn -pl dev exec:java}.
+ * Requiere que {@code core} este instalado en el repositorio local
+ * ({@code mvn -pl core install -DskipTests}). Se ejecuta con
+ * {@code mvn -pl dev exec:java} o con
+ * {@code mvn -pl dev exec:java -Dexec.mainClass=ec.sfjfx.dev.SemillaDemo}.
  */
 public final class SemillaDemo {
 

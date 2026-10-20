@@ -21,7 +21,10 @@ public final class VistaConfiguracion extends BorderPane {
                 tab("Modulos", new VistaModulos()),
                 tab("Importaciones", new VistaImportaciones()),
                 tab("Respaldos", new VistaRespaldos()),
-                tab("Migraciones", new VistaMigraciones()));
+                tab("Migraciones", new VistaMigraciones()),
+                tab("Estado", new VistaEstadoInstalacion()),
+                tab("Licencia", new VistaLicencia()),
+                tab("Actualizaciones", new VistaActualizaciones()));
         setCenter(tabs);
     }
 

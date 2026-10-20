@@ -14,10 +14,15 @@ mvn -pl core exec:java              # solo migraciones
 mvn -pl dev exec:java               # semilla demo completa (solo desarrollo/local)
 ```
 
-> **Estado actual (Fases 0 y 1 implementadas):** `Arranque` solo aplica las migraciones
-> (`V1`–`V8`). Las semillas viven en el módulo `dev`, que no es dependencia de `core` ni de `ui` y
-> no se incluye en el producto instalable. Si `app.entorno=prod`, las semillas se rechazan con un
-> error explícito.
+> **Estado actual (Fases 0 y 1 implementadas; Fase 2 en curso):** `Arranque` solo aplica las
+> migraciones (`V1`–`V9`). Las semillas viven en el módulo `dev`, que no es dependencia de `core`
+> ni de `ui` y no se incluye en el producto instalable. Si `app.entorno=prod`, las semillas se
+> rechazan con un error explícito.
+>
+> **Comandos operativos adicionales** (sin sesión de usuario, pensados para tareas del sistema
+> operativo): `mvn -pl core exec:java -Dexec.args="respaldo"` genera y verifica un respaldo, y
+> `mvn -pl core exec:java -Dexec.args="salud"` devuelve el estado de la instalación con código de
+> salida 0/1.
 
 Si la semilla ya estaba aplicada, el comando no duplica datos. Para volver a empezar desde cero:
 

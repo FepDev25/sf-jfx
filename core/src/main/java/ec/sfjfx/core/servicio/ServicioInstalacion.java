@@ -115,6 +115,16 @@ public final class ServicioInstalacion {
                 throw new SQLException("No se pudieron aplicar las migraciones", e);
             }
         });
+        registrarSiFalta();
+    }
+
+    /**
+     * Registra los metadatos de instalacion si la base ya tiene empresas pero aun no tiene la fila.
+     *
+     * <p>Se ejecuta tras aplicar migraciones para que una instalacion existente (creada antes de
+     * {@code V8}) quede registrada con su codigo unico de licencia.
+     */
+    public void registrarSiFalta() {
         backfillInstalacion();
     }
 

@@ -47,6 +47,7 @@ public final class ServicioComprobante {
     private static final String ESTAB = "001";
     private static final String PTO_EMI = "001";
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final ComprobanteRepositorio repo = new ComprobanteRepositorio();
     private final SecuenciaDocumentoRepositorio secuencias = new SecuenciaDocumentoRepositorio();
     private final CertificadoRepositorio certificados = new CertificadoRepositorio();
@@ -73,6 +74,7 @@ public final class ServicioComprobante {
     }
 
     public long emitirFacturaDesdeVenta(long ventaId) {
+        licencia.exigirOperacion("emitir una factura");
         Venta venta = ventas.porId(ventaId).orElseThrow(() -> new ValidacionExcepcion("Venta no existe"));
         if (repo.facturaDeVenta(ventaId).isPresent()) {
             throw new ValidacionExcepcion("La venta ya tiene una factura emitida");
@@ -100,6 +102,7 @@ public final class ServicioComprobante {
     }
 
     public long emitirNotaCreditoDevolucion(long devolucionId) {
+        licencia.exigirOperacion("emitir una nota de credito");
         DevolucionVenta dev = devoluciones.porId(devolucionId);
         Venta venta = ventas.porId(dev.ventaId()).orElseThrow();
         Empresa empresa = empresas.porId(venta.empresaId()).orElseThrow();

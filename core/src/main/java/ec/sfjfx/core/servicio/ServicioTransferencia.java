@@ -12,6 +12,7 @@ import ec.sfjfx.core.util.ValidacionExcepcion;
 
 public final class ServicioTransferencia {
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final TransferenciaRepositorio repo = new TransferenciaRepositorio();
     private final ServicioInventario inventario = new ServicioInventario();
     private final ServicioAuditoria auditoria = new ServicioAuditoria();
@@ -30,6 +31,7 @@ public final class ServicioTransferencia {
 
     public long crear(long sucursalOrigenId, long bodegaOrigenId, long sucursalDestinoId, long bodegaDestinoId,
                       String nota, List<TransferenciaDetalle> detalles) {
+        licencia.exigirOperacion("crear una transferencia");
         if (bodegaOrigenId == bodegaDestinoId) {
             throw new ValidacionExcepcion("La bodega destino debe ser distinta a la de origen");
         }

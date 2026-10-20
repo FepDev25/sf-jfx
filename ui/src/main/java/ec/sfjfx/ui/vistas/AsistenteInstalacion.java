@@ -424,6 +424,7 @@ public final class AsistenteInstalacion extends BorderPane {
             mostrarError("No se pudo guardar la configuracion: " + mensaje(e));
             return false;
         }
+        ConexionBD.reiniciar();
 
         try {
             ServicioInstalacion servicio = new ServicioInstalacion();

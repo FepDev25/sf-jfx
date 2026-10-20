@@ -16,6 +16,7 @@ import ec.sfjfx.core.util.ValidacionExcepcion;
 
 public final class ServicioToma {
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final TomaInventarioRepositorio repo = new TomaInventarioRepositorio();
     private final ServicioInventario inventario = new ServicioInventario();
     private final ServicioAuditoria auditoria = new ServicioAuditoria();
@@ -58,6 +59,7 @@ public final class ServicioToma {
 
     /** Aplica las diferencias como movimientos de ajuste. */
     public void aplicar(long tomaId) {
+        licencia.exigirOperacion("aplicar una toma de inventario");
         Bd.transaccion(c -> {
             TomaInventario toma = repo.porId(tomaId).orElseThrow(() -> new ValidacionExcepcion("No existe"));
             if (!"EN_CONTEO".equals(toma.estado()) && !"CERRADA".equals(toma.estado())) {

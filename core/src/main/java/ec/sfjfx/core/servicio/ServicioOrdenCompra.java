@@ -15,6 +15,7 @@ import ec.sfjfx.core.util.ValidacionExcepcion;
 
 public final class ServicioOrdenCompra {
 
+    private final ServicioLicencia licencia = new ServicioLicencia();
     private final OrdenCompraRepositorio repo = new OrdenCompraRepositorio();
     private final ServicioAuditoria auditoria = new ServicioAuditoria();
 
@@ -28,6 +29,7 @@ public final class ServicioOrdenCompra {
 
     public long crear(long sucursalId, long proveedorId, LocalDate fechaEntrega, String condicionesPago, String nota,
                       List<OrdenCompraDetalle> detalles) {
+        licencia.exigirOperacion("crear una orden de compra");
         if (detalles == null || detalles.isEmpty()) {
             throw new ValidacionExcepcion("La orden no tiene items");
         }
