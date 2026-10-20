@@ -1,4 +1,4 @@
-package ec.sfjfx.core.arranque;
+package ec.sfjfx.dev;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,9 +28,12 @@ import ec.sfjfx.core.sri.ClaveAcceso;
  * sucursales, catalogo, stock, clientes, proveedores, ventas, compras,
  * promociones, cupones, dispositivos y reportes guardados.
  *
+ * <p><strong>Herramienta de desarrollo.</strong> No forma parte del producto
+ * instalable ni del artefacto de produccion. Se ejecuta manualmente en la PC
+ * del desarrollador, nunca en una instalacion de cliente.
+ *
  * <p>Es idempotente mediante la clave de configuracion {@code demo.seed_version}.
- * Se ejecuta automaticamente desde {@link Arranque} o con
- * {@code mvn -pl core exec:java -Dexec.mainClass=ec.sfjfx.core.arranque.SemillaDemo}.
+ * Se ejecuta con {@code mvn -pl dev exec:java}.
  */
 public final class SemillaDemo {
 
@@ -111,6 +114,7 @@ public final class SemillaDemo {
 
     /** Ejecuta la semilla masiva. Devuelve {@code true} si inserto datos nuevos. */
     public static boolean ejecutar() throws SQLException {
+        GuardiaSemilla.verificarEntorno();
         if (empresaId() == 0) {
             SemillaDesarrollo.ejecutar();
         }

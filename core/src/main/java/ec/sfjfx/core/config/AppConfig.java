@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Properties;
 
 /**
@@ -79,13 +80,41 @@ public final class AppConfig {
         return valor == null ? porDefecto : Boolean.parseBoolean(valor);
     }
 
+    /**
+     * Entorno de ejecucion normalizado: {@code dev}, {@code local}, {@code test} o {@code prod}.
+     *
+     * <p>Si no se configura {@code app.entorno}, se asume {@code prod} por seguridad.
+     */
+    public static String entorno() {
+        return obtener("app.entorno", "prod").trim().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Indica si la instalacion es de produccion.
+     *
+     * <p>Solo se consideran entornos de desarrollo/local/test los valores
+     * {@code dev}, {@code desarrollo}, {@code local}, {@code test} y {@code pruebas}.
+     * Cualquier otro valor se trata como produccion para evitar ejecutar semillas por error.
+     */
+    public static boolean esProduccion() {
+        return switch (entorno()) {
+            case "dev", "desarrollo", "local", "test", "pruebas" -> false;
+            default -> true;
+        };
+    }
+
+    /** Indica si las herramientas de desarrollo (semillas) pueden ejecutarse. */
+    public static boolean permiteSemillas() {
+        return !esProduccion();
+    }
+
     private static void aplicarValoresPorDefecto() {
         PROPIEDADES.clear();
         PROPIEDADES.setProperty("db.url", "jdbc:postgresql://localhost:5432/sfjfx");
         PROPIEDADES.setProperty("db.usuario", "sfjfx");
         PROPIEDADES.setProperty("db.password", "sfjfx");
         PROPIEDADES.setProperty("db.esquema", "public");
-        PROPIEDADES.setProperty("app.entorno", "dev");
+        PROPIEDADES.setProperty("app.entorno", "prod");
     }
 
     private static Path resolverRutaExterna() {

@@ -1,4 +1,4 @@
-package ec.sfjfx.core.arranque;
+package ec.sfjfx.dev;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import ec.sfjfx.core.config.AppConfig;
 import ec.sfjfx.core.db.ConexionBD;
 import ec.sfjfx.core.modulos.ModuloSistema;
 import ec.sfjfx.core.seguridad.SeguridadPass;
@@ -13,6 +14,10 @@ import ec.sfjfx.core.seguridad.SeguridadPass;
 /**
  * Semilla de desarrollo: crea una empresa demo con sucursal, bodegas, caja,
  * modulos activos, consecutivos y un usuario administrador.
+ *
+ * <p><strong>Herramienta de desarrollo.</strong> No forma parte del producto
+ * instalable ni del artefacto de produccion. Se ejecuta manualmente en la PC
+ * del desarrollador, nunca en una instalacion de cliente.
  *
  * <p>Es idempotente: si la empresa demo ya existe, no hace nada.
  * Credenciales por defecto: {@code admin / admin} (PIN {@code 1234}).
@@ -32,6 +37,7 @@ public final class SemillaDesarrollo {
 
     /** Ejecuta la semilla. Devuelve {@code true} si sembro datos, {@code false} si ya existian. */
     public static boolean ejecutar() throws SQLException {
+        GuardiaSemilla.verificarEntorno();
         try (Connection c = ConexionBD.abrirTransaccional()) {
             try {
                 if (empresaExiste(c)) {
@@ -213,6 +219,7 @@ public final class SemillaDesarrollo {
     }
 
     public static void main(String[] args) throws Exception {
+        AppConfig.cargar();
         boolean sembrado = ejecutar();
         System.out.println(sembrado
                 ? "Semilla de desarrollo creada (admin/admin)."

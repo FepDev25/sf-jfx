@@ -3,6 +3,7 @@ package ec.sfjfx.core.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,6 +37,32 @@ class AppConfigTest {
         assertEquals("jdbc:postgresql://localhost:5432/sfjfx", AppConfig.obtener("db.url"));
         assertEquals(5432, AppConfig.obtenerInt("db.puerto", 5432));
         assertFalse(AppConfig.obtenerBooleano("db.usarSsl", false));
+        assertEquals("prod", AppConfig.entorno());
+        assertTrue(AppConfig.esProduccion());
+        assertFalse(AppConfig.permiteSemillas());
+    }
+
+    @Test
+    void entornoDevPermiteSemillas() throws IOException {
+        Path archivo = directorio.resolve("dev.properties");
+        Files.writeString(archivo, "app.entorno=dev\n");
+        System.setProperty("sfjfx.config", archivo.toString());
+        AppConfig.recargar();
+
+        assertEquals("dev", AppConfig.entorno());
+        assertFalse(AppConfig.esProduccion());
+        assertTrue(AppConfig.permiteSemillas());
+    }
+
+    @Test
+    void entornoDesconocidoSeTrataComoProduccion() throws IOException {
+        Path archivo = directorio.resolve("staging.properties");
+        Files.writeString(archivo, "app.entorno=staging\n");
+        System.setProperty("sfjfx.config", archivo.toString());
+        AppConfig.recargar();
+
+        assertTrue(AppConfig.esProduccion());
+        assertFalse(AppConfig.permiteSemillas());
     }
 
     @Test
