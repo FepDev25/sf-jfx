@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sf-jfx — Asistente de instalación</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <div class="wizard-fondo">
+    <div class="wizard-card">
+      <aside class="wizard-rail">
+        <div class="marca">sf-jfx</div>
+        <div class="wizard-sub">Instalación inicial</div>
+        <div class="wizard-step done">1. Conexión</div>
+        <div class="wizard-step active">2. Empresa</div>
+        <div class="wizard-step">3. Organización</div>
+        <div class="wizard-step">4. Administrador</div>
+        <div class="wizard-note">
+          No se cargan datos de demostración. Las semillas quedan fuera del producto instalable.
+        </div>
+      </aside>
+
+      <main class="wizard-body">
+        <h1 class="wizard-title">Datos de la empresa</h1>
+        <p class="wizard-sub">
+          Estos datos identifican al emisor y definen el perfil de módulos de la instalación.
+        </p>
+
+        <div class="wizard-grid">
+          <div class="wizard-field">
+            <label>RUC</label>
+            <input value="1790011678001" />
+          </div>
+          <div class="wizard-field">
+            <label>Razón social</label>
+            <input value="Supermercado La Esquina S.A." />
+          </div>
+          <div class="wizard-field">
+            <label>Nombre comercial</label>
+            <input value="La Esquina" />
+          </div>
+          <div class="wizard-field">
+            <label>Régimen</label>
+            <select>
+              <option>GENERAL</option>
+              <option>RIMPE_EMPRENDEDOR</option>
+              <option>RIMPE_NEGOCIO_POPULAR</option>
+            </select>
+          </div>
+          <div class="wizard-field">
+            <label>Perfil de instalación</label>
+            <select>
+              <option>Supermercado</option>
+              <option>Minimercado</option>
+              <option>Tienda</option>
+            </select>
+          </div>
+          <div class="wizard-field">
+            <label>Ambiente SRI</label>
+            <select>
+              <option>Pruebas</option>
+              <option>Producción</option>
+            </select>
+          </div>
+          <div class="wizard-field full">
+            <label>Dirección matriz</label>
+            <input value="Av. Principal y Calle 1, Quito" />
+          </div>
+          <div class="wizard-field">
+            <label>Teléfono</label>
+            <input value="022345678" />
+          </div>
+          <div class="wizard-field">
+            <label>Email</label>
+            <input value="contacto@laesquina.ec" />
+          </div>
+        </div>
+
+        <p class="wizard-note">
+          El modo multiempresa es avanzado y solo aplica a cadenas o holdings.
+        </p>
+
+        <div class="wizard-actions">
+          <button class="wizard-btn">Anterior</button>
+          <button class="wizard-btn primary">Siguiente</button>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

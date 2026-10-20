@@ -3,17 +3,21 @@
 Semilla masiva para probar la aplicación sin cargar datos a mano. Es **idempotente**: se aplica
 una sola vez y se registra en `configuracion` con la clave `demo.seed_version`.
 
-## Cómo cargarla
+## Cómo cargarla (entorno local)
 
-Con PostgreSQL levantado y la configuración local lista:
+Con PostgreSQL levantado y la configuración local lista (`app.entorno=dev`):
 
 ```bash
 docker compose up -d
-mvn -pl core exec:java
+mvn -pl core install -DskipTests    # instala core actualizado en ~/.m2
+mvn -pl core exec:java              # solo migraciones
+mvn -pl dev exec:java               # semilla demo completa (solo desarrollo/local)
 ```
 
-`Arranque` aplica las migraciones (`V1`–`V7`), crea la empresa base si falta y luego ejecuta
-`SemillaDemo`. Al final imprime las credenciales.
+> **Estado actual (Fases 0 y 1 implementadas):** `Arranque` solo aplica las migraciones
+> (`V1`–`V8`). Las semillas viven en el módulo `dev`, que no es dependencia de `core` ni de `ui` y
+> no se incluye en el producto instalable. Si `app.entorno=prod`, las semillas se rechazan con un
+> error explícito.
 
 Si la semilla ya estaba aplicada, el comando no duplica datos. Para volver a empezar desde cero:
 
@@ -22,8 +26,22 @@ Si la semilla ya estaba aplicada, el comando no duplica datos. Para volver a emp
 ```bash
 docker compose down -v
 docker compose up -d
+mvn -pl core install -DskipTests
 mvn -pl core exec:java
+mvn -pl dev exec:java
 ```
+
+## Probar el asistente de instalación (Fase 1)
+
+Para probar una instalación real en la PC del desarrollador:
+
+1. Base limpia y migraciones aplicadas.
+2. Lanzar la UI: `mvn -pl ui javafx:run`.
+3. Completar el asistente: conexión, empresa/RUC/régimen, sucursal/bodega/caja y administrador.
+   No hay credenciales por defecto ni datos de demostración.
+4. Opcional: cargar la semilla demo con `mvn -pl dev exec:java` (solo si `app.entorno=dev`).
+   Si la empresa instalada usa el RUC demo `1790011678001`, la semilla puebla esa empresa; si usa
+   otro RUC, crea una empresa demo separada.
 
 ## Credenciales
 

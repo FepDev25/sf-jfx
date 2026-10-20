@@ -8,6 +8,7 @@ Rol que ve cada vista entre paréntesis. `[flag]` = módulo que debe estar activ
 
 ## Transversales
 - **Login** — usuario + contraseña (hash). Única sesión por caja.
+- **Asistente de instalación / primer arranque** — conexión PostgreSQL, empresa/RUC/régimen, sucursal/bodega/caja, administrador, ambiente SRI y cambio de contraseña. Sin credenciales por defecto ni opción de cargar semillas. (Instalador · Fase 1 implementada)
 - **Selección de sucursal/caja** — si el usuario tiene varias; elige terminal al abrir turno.
 - **Shell principal** — sidebar colapsable por módulo, barra superior (empresa/sucursal, usuario, hora), área de contenido, notificaciones.
 - **Dashboard** — KPIs (ventas del día, ticket promedio, top productos, alertas de stock/bajo inventario, CxC/CxP), gráficos JavaFX. (Todos, según permisos)

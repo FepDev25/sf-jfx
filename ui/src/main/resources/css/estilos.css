@@ -187,6 +187,82 @@
     -fx-font-size: 12px;
 }
 
+.login-info {
+    -fx-text-fill: #166534;
+    -fx-font-size: 12px;
+}
+
+/* ----- Asistente de instalacion ----- */
+.wizard-fondo {
+    -fx-background-color: linear-gradient(to bottom right, #eff4ff, #f8fafc);
+}
+
+.wizard-tarjeta {
+    -fx-background-color: -sf-surface;
+    -fx-background-radius: 16;
+    -fx-border-color: -sf-borde;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.12), 24, 0, 0, 8);
+    -fx-padding: 8;
+}
+
+.wizard-rail {
+    -fx-background-color: -sf-bg;
+    -fx-background-radius: 12;
+    -fx-padding: 18;
+    -fx-min-width: 210;
+    -fx-pref-width: 210;
+}
+
+.wizard-paso {
+    -fx-text-fill: -sf-texto-suave;
+    -fx-padding: 8 10 8 10;
+    -fx-background-radius: 8;
+}
+
+.wizard-paso.activo {
+    -fx-background-color: -sf-primario-suave;
+    -fx-text-fill: -sf-primario;
+    -fx-font-weight: bold;
+}
+
+.wizard-paso.hecho {
+    -fx-text-fill: -sf-texto;
+}
+
+.wizard-titulo {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -sf-texto;
+}
+
+.wizard-descripcion {
+    -fx-text-fill: -sf-texto-suave;
+}
+
+.wizard-error {
+    -fx-text-fill: #dc2626;
+    -fx-font-size: 12px;
+}
+
+.wizard-info {
+    -fx-text-fill: #166534;
+    -fx-font-size: 12px;
+}
+
+.wizard-resumen {
+    -fx-background-color: -sf-bg;
+    -fx-background-radius: 10;
+    -fx-padding: 12;
+    -fx-text-fill: -sf-texto;
+}
+
+.wizard-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
 /* ----- Formularios y secciones ----- */
 .titulo-seccion {
     -fx-font-size: 18px;

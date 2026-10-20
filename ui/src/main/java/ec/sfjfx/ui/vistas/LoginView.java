@@ -25,9 +25,14 @@ public final class LoginView extends BorderPane {
     private final TextField campoUsuario = new TextField();
     private final PasswordField campoClave = new PasswordField();
     private final Label etiquetaError = new Label();
+    private final Label etiquetaMensaje = new Label();
     private final Button botonIngresar = new Button("Ingresar");
 
     public LoginView(Consumer<Sesion> alIngresar) {
+        this(alIngresar, null, null);
+    }
+
+    public LoginView(Consumer<Sesion> alIngresar, String usuarioInicial, String mensaje) {
         this.alIngresar = alIngresar;
         getStyleClass().add("login-fondo");
 
@@ -40,6 +45,15 @@ public final class LoginView extends BorderPane {
         campoUsuario.getStyleClass().add("campo");
         campoClave.setPromptText("Contrasena");
         campoClave.getStyleClass().add("campo");
+        if (usuarioInicial != null && !usuarioInicial.isBlank()) {
+            campoUsuario.setText(usuarioInicial);
+        }
+
+        etiquetaMensaje.getStyleClass().add("login-info");
+        etiquetaMensaje.setWrapText(true);
+        etiquetaMensaje.setVisible(mensaje != null && !mensaje.isBlank());
+        etiquetaMensaje.setManaged(etiquetaMensaje.isVisible());
+        etiquetaMensaje.setText(mensaje == null ? "" : mensaje);
 
         etiquetaError.getStyleClass().add("login-error");
         etiquetaError.setWrapText(true);
@@ -51,7 +65,8 @@ public final class LoginView extends BorderPane {
         botonIngresar.setDefaultButton(true);
         botonIngresar.setOnAction(e -> intentar());
 
-        VBox tarjeta = new VBox(10, marca, subtitulo, campoUsuario, campoClave, etiquetaError, botonIngresar);
+        VBox tarjeta = new VBox(10, marca, subtitulo, etiquetaMensaje, campoUsuario, campoClave,
+                etiquetaError, botonIngresar);
         tarjeta.getStyleClass().add("login-tarjeta");
         tarjeta.setAlignment(Pos.CENTER_LEFT);
         tarjeta.setMaxWidth(340);
@@ -61,7 +76,11 @@ public final class LoginView extends BorderPane {
         centro.setPadding(new Insets(40));
         setCenter(centro);
 
-        javafx.application.Platform.runLater(campoUsuario::requestFocus);
+        if (usuarioInicial != null && !usuarioInicial.isBlank()) {
+            javafx.application.Platform.runLater(campoClave::requestFocus);
+        } else {
+            javafx.application.Platform.runLater(campoUsuario::requestFocus);
+        }
     }
 
     private void intentar() {

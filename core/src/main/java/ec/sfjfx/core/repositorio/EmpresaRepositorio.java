@@ -52,6 +52,28 @@ public final class EmpresaRepositorio {
         });
     }
 
+    public long contar() {
+        return Bd.consulta(c -> {
+            try (PreparedStatement ps = c.prepareStatement("SELECT COUNT(*) FROM empresa");
+                 ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getLong(1);
+            }
+        });
+    }
+
+    public boolean existeRuc(String ruc) {
+        return Bd.consulta(c -> {
+            try (PreparedStatement ps = c.prepareStatement(
+                    "SELECT 1 FROM empresa WHERE lower(ruc) = lower(?)")) {
+                ps.setString(1, ruc);
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next();
+                }
+            }
+        });
+    }
+
     public long crear(Empresa e) {
         return Bd.transaccion(c -> {
             String sql = "INSERT INTO empresa (ruc, razon_social, nombre_comercial, direccion_matriz, "

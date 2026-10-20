@@ -44,6 +44,7 @@ sf-jfx (parent pom)
 | 9 | Reportes y analítica | `HECHO` |
 | 10 | Administración y operación | `HECHO` |
 | 11 | Pulido y aseguramiento | `HECHO` |
+| 12 | Despliegue auto-instalable | `PENDIENTE` |
 
 **Todos los hitos (0–11) están cerrados.** El sistema está listo para pruebas integrales con los datos de demostración descritos en [`datos-demo.md`](datos-demo.md).
 
@@ -227,6 +228,74 @@ _Paginación en servidor para productos, ventas, clientes, proveedores y comprob
 
 ---
 
+## Hito 12 — Despliegue auto-instalable `[PENDIENTE]`
+
+**Modelo:** single-tenant auto-instalable, una base PostgreSQL por instalación/cliente.
+**Plataformas:** Windows y Linux. **Base de datos incluida:** PostgreSQL local administrado por el
+instalador. **Modo por defecto:** `UNICA_EMPRESA`. La decisión completa, alternativas y
+consecuencias están en el [ADR-0001](adr/0001-modelo-despliegue-single-tenant.md).
+
+> **Estado:** Fases 0 y 1 implementadas (2026-10-19). Fases 2–3 no iniciadas. Las casillas se
+> marcan solo al verificar los criterios de aceptación de cada fase.
+
+### Fase 0 — Formalización y guardas de semilla `[HECHO]`
+
+- [x] ADR-0001 y documentación alineada (README, decisiones, roadmap, datos demo, modelo de datos y vistas).
+- [x] Separación de entornos (`app.entorno=dev|prod`) y guardia explícita de semilla.
+- [x] `Arranque` por defecto: **solo migraciones**, sin `SemillaDesarrollo` ni `SemillaDemo`.
+- [x] Comandos explícitos para ejecutar semillas solo en desarrollo/local.
+- [x] Exclusión de semillas del instalador y del artefacto de producción.
+- [x] Prueba: arranque de producción sobre base vacía deja 0 empresas y 0 usuarios.
+- [x] Las migraciones y los datos base de `V2` siguen aplicándose.
+
+**Cierre Fase 0 (2026-10-19):** `core` solo migra, semillas en `dev`, guardia `app.entorno=prod`,
+77 pruebas verdes (75 `core` + 2 `dev`).
+
+### Fase 1 — Primer arranque e instalación `[HECHO]`
+
+- [x] Asistente de instalación (conexión, empresa/RUC/régimen, sucursal, bodega, caja, administrador, ambiente SRI).
+- [x] Mockup del asistente antes de implementarlo (decisión 13.6).
+- [x] Metadatos de instalación (`instalacion`, `V8`) con modo `UNICA_EMPRESA`/`MULTIEMPRESA`.
+- [x] Modo `UNICA_EMPRESA` por defecto; `MULTIEMPRESA` como opción avanzada explícita.
+- [x] Sin credenciales por defecto; contraseña elegida por el cliente.
+- [x] Validaciones de RUC/cédula, duplicados y conexión; migraciones ejecutadas desde el asistente.
+- [x] Instalación limpia usable desde la UI sin SQL manual y sin datos de demostración.
+- [x] El asistente no ofrece cargar semillas ni datos demo.
+
+**Cierre Fase 1 (2026-10-19):** asistente JavaFX de 4 pasos, `V8`, creación transaccional de
+empresa/sucursal/bodega/caja/administrador, módulos por perfil, secuencias SRI, configuración y
+lista de precio inicial. 79 pruebas verdes (77 `core` + 2 `dev`).
+
+### Fase 2 — Empaquetado y operación `[PENDIENTE]`
+
+- [ ] Instalador nativo para **Windows y Linux** con **PostgreSQL incluido**.
+- [ ] El instalador excluye el módulo `dev` y no ofrece semillas.
+- [ ] PostgreSQL local administrado: inicialización, servicio, puerto, credenciales y data directory.
+- [ ] Alternativa Docker Compose (aplicación + PostgreSQL) para despliegues de servidor.
+- [ ] Respaldo/restauración probados (`pg_dump`/`pg_restore`) con historial y verificación.
+- [ ] Migraciones con bloqueo (advisory lock) y actualización/rollback documentados.
+- [ ] Actualización de la aplicación separada de saltos mayores de PostgreSQL.
+- [ ] Pool de conexiones, logs, versión visible y healthcheck.
+- [ ] Instalación completa en Windows y Linux siguiendo solo la documentación.
+- [ ] Actualización remota asistida: servidor de updates, paquetes firmados, aprobación del técnico, respaldo y rollback.
+- [ ] Licencia perpetua + mantenimiento anual: archivo firmado offline, validación por `id_instalacion`, edición/límites y pantalla de licencia.
+- [ ] Comportamiento ante mantenimiento vencido: la operación y los datos siguen disponibles; solo se detienen updates/soporte.
+
+### Fase 3 (opcional) — Gestión de instancias `[PENDIENTE]`
+
+- [ ] Panel de instancias: cliente, versión, último respaldo, salud y licencia.
+- [ ] Aprovisionamiento repetible y auditable de una instalación nueva.
+- [ ] Diagnóstico remoto opt-in y alertas de respaldos fallidos.
+- [ ] Supervisión de versiones y actualizaciones remotas asistidas, sin ejecutarlas en automático.
+- [ ] Portal opcional de renovación de licencias y activación, sin dependencia para operar.
+- [ ] Operar N instalaciones sin base de datos de negocio compartida.
+
+**Fuera de alcance del Hito 12:** multi-tenant compartido (`tenant_id` + RLS), actualización
+automática por flota, envío real al SRI, sincronización offline avanzada y facturación SaaS
+automática.
+
+---
+
 ## Orden de mockups (previo a UI por hito) `[HECHO]`
 
 - [x] Shell + Login.
@@ -253,3 +322,7 @@ _Paginación en servidor para productos, ventas, clientes, proveedores y comprob
 | 9 | 2026-10-16 | Reportes y analítica: dashboard con KPIs y gráficos en vivo, 22 reportes en 6 grupos con filtros (fecha/sucursal/categoría/cajero), vistas guardadas (`V5`), exportación CSV/XLSX/PDF (Apache POI). 42 pruebas verdes. |
 | 10 | 2026-10-16 | Administración: dispositivos (impresoras/lector/balanza/gaveta), respaldo y restauración con programación e historial (`V6`), perfiles de instalación, importación CSV/XLSX de clientes y proveedores con vista previa, consola de migraciones. 49 pruebas verdes. |
 | 11 | 2026-10-16 | Pulido y aseguramiento: paginación en servidor (productos, ventas, clientes, proveedores, comprobantes), índices (`V7`), atajos F5/Ctrl+F y POS F7/F9, descuento por línea con PIN, venta rápida, accesibilidad y foco en formularios, formato monetario unificado, pruebas fiscales, PPP, promociones, autorización, caja y paginación. 72 pruebas verdes. |
+
+> **Hito 12:** Fases 0 y 1 cerradas el 2026-10-19; Fases 2–3 pendientes. El hito completo se
+> registrará cuando se completen y verifiquen todas sus fases según el
+> [ADR-0001](adr/0001-modelo-despliegue-single-tenant.md).

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,5 +86,23 @@ class AppConfigTest {
 
         assertEquals("jdbc:postgresql://otro-host:6000/otra", AppConfig.obtener("db.url"));
         assertEquals("test", AppConfig.obtener("app.entorno"));
+    }
+
+    @Test
+    void guardarConservaClavesYRecargaConfiguracion() throws IOException {
+        Path archivo = directorio.resolve("guardado.properties");
+        Files.writeString(archivo, "app.entorno=dev\n");
+        System.setProperty("sfjfx.config", archivo.toString());
+        AppConfig.recargar();
+
+        AppConfig.guardar(Map.of(
+                "db.url", "jdbc:postgresql://servidor:55432/sfjfx",
+                "db.usuario", "usuario_nuevo",
+                "app.entorno", "prod"));
+
+        assertEquals("jdbc:postgresql://servidor:55432/sfjfx", AppConfig.obtener("db.url"));
+        assertEquals("usuario_nuevo", AppConfig.obtener("db.usuario"));
+        assertEquals("prod", AppConfig.obtener("app.entorno"));
+        assertTrue(Files.readString(archivo).contains("db.url"));
     }
 }

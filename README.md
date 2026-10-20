@@ -11,6 +11,7 @@ diseño profesional y modular.
 ```
 sf-jfx/ (parent pom)
 ├── core/   Dominio, repositorios JDBC y reglas de negocio. Sin dependencia de la UI.
+├── dev/    Herramientas de desarrollo (semillas). No forma parte del producto instalable.
 ├── ui/     Interfaz JavaFX (shell, Modo Caja, vistas por módulo).
 └── docs/   Diseño: decisiones, modelo de datos, vistas de UI y roadmap.
 ```
@@ -28,10 +29,35 @@ compras y cuentas por pagar, ventas/POS/caja con arqueo, clientes y CxC, factura
 SRI simulada (XML firmado y RIDE), fidelización/promociones, reportes con exportación y
 administración (dispositivos, respaldos, perfiles, importaciones y migraciones).
 
+## Modelo de despliegue
+
+El sistema se distribuye como **single-tenant auto-instalable**: cada cliente u operador tiene su
+propia instalación y su propia base de datos PostgreSQL. **No** se adopta un SaaS multi-tenant
+compartido.
+
+- `empresa` es una entidad legal dentro de la instalación (útil para cadenas y holdings); no es
+  un tenant de SaaS.
+- Una base PostgreSQL por instalación. Si varios clientes comparten servidor PostgreSQL, cada uno
+  usa una base independiente.
+- Instalador nativo para **Windows y Linux**, con **PostgreSQL incluido** y administrado por el
+  instalador (Fase 2).
+- Modo por defecto **`UNICA_EMPRESA`**; el modo `MULTIEMPRESA` es una opción avanzada explícita.
+- **Instalación manual** con instalador y **actualizaciones remotas asistidas**, aprobadas por un
+  técnico. No hay actualización automática por flota.
+- **Licencia perpetua por instalación + mantenimiento anual**, mediante archivo firmado offline.
+- El primer arranque se resuelve con un **asistente de instalación**, sin credenciales por
+  defecto (Hito 12, Fase 1).
+- Las semillas de desarrollo/demostración **no se incluyen en el instalador ni se ejecutan en
+  producción**; son una herramienta local del desarrollador (Hito 12, Fase 0).
+
+Decisión completa y plan de implementación:
+[`docs/adr/0001-modelo-despliegue-single-tenant.md`](docs/adr/0001-modelo-despliegue-single-tenant.md).
+Estado: **Fases 0 y 1 completadas; Fase 2 pendiente; Fase 3 pendiente**.
+
 ## Compilar y probar
 
 ```bash
-mvn clean package       # compila y ejecuta las 72 pruebas
+mvn clean package       # compila y ejecuta las 79 pruebas
 mvn test                # solo pruebas
 ```
 
@@ -48,6 +74,19 @@ mvn -pl ui javafx:run
 > comandos, Maven lo ejecuta sobre **todos** los proyectos del reactor —incluido el `parent` y
 > `core`, que no tienen `mainClass`— y falla. `mvn package` tampoco basta, porque deja `core`
 > solo en `core/target` sin instalarlo en `~/.m2`.
+
+## Primer arranque
+
+Con la base vacía, la aplicación muestra el **asistente de instalación**:
+
+1. Conexión a PostgreSQL y entorno (`Producción` o `Desarrollo local`).
+2. Empresa, RUC, régimen, perfil y ambiente SRI.
+3. Sucursal, bodega y caja.
+4. Administrador inicial.
+
+No se crean credenciales por defecto ni datos de demostración: el administrador define su propia
+contraseña. Para una prueba local, elija **Desarrollo local** y, si desea datos de demostración,
+ejecute `mvn -pl dev exec:java` después de instalar.
 
 ## Base de datos (Docker)
 
@@ -73,19 +112,28 @@ cp core/src/main/resources/sfjfx.properties.example ~/.sfjfx/sfjfx.properties
 
 Para el contenedor Docker, `db.url=jdbc:postgresql://localhost:55432/sfjfx`.
 
-Claves: `db.url`, `db.usuario`, `db.password`, `db.esquema`.
+Claves: `db.url`, `db.usuario`, `db.password`, `db.esquema`, `app.entorno` (`dev`/`prod`).
+Si `app.entorno` no se define, se asume `prod`; para desarrollo local use `dev`.
 Orden de búsqueda: `-Dsfjfx.config=<ruta>` → `$SFJFX_CONFIG` →
 `~/.sfjfx/sfjfx.properties` → recurso `/sfjfx.properties` del classpath.
 
-## Migraciones y datos de demostración
+## Migraciones y semillas (solo desarrollo/demostración)
 
 El esquema se versiona en `core/src/main/resources/db/migracion/` con el formato
 `V<n>__descripcion.sql`. `MigradorEsquema` aplica las pendientes dentro de una
 transacción y registra el historial en la tabla `migracion_esquema`.
 
+La **Fase 0 ya está implementada**: `Arranque` solo aplica migraciones y nunca ejecuta semillas.
+
 ```bash
-mvn -pl core exec:java     # aplica migraciones + semilla base + datos masivos de demo
+mvn -pl core exec:java              # arranque normal: solo migraciones
+mvn -pl core install -DskipTests    # instala core actualizado en ~/.m2 (una vez)
+mvn -pl dev exec:java               # semilla demo completa (solo desarrollo/local)
+mvn -pl dev exec:java -Dexec.mainClass=ec.sfjfx.dev.SemillaDesarrollo  # solo empresa base
 ```
+
+El módulo `dev` no es dependencia de `core` ni de `ui`; por eso no llega al instalador ni al
+paquete de producción. Las semillas se rechazan si `app.entorno=prod`.
 
 La semilla de demostración es idempotente y crea una empresa con dos sucursales, usuarios con
 distintos roles, catálogo, stock/lotes, clientes, proveedores, ventas, comprobantes, compras,
@@ -125,7 +173,13 @@ configuran desde **Configuración → Respaldos**. El directorio por defecto es 
   ventas/POS/caja, clientes/pedidos, facturación SRI (simulada), fidelización/promociones,
   reportes/analítica, administración/operación y **pulido/aseguramiento** (paginación, índices,
   atajos de teclado, accesibilidad y 72 pruebas automatizadas).
-- Base de datos Docker (PostgreSQL 17, puerto 55432): 90 tablas (`V1`–`V7`) + datos base y demo.
-- El alcance congelado quedó completo; sigue mantenimiento evolutivo y validación con uso real.
+- **Hito 12 — Despliegue auto-instalable:** **Fases 0 y 1 completadas; Fase 2 pendiente.** Fase 0:
+  arranque solo migraciones y semillas aisladas en `dev`. Fase 1: asistente de primer arranque con
+  `V8`. 79 pruebas verdes. Ver
+  [ADR-0001](docs/adr/0001-modelo-despliegue-single-tenant.md).
+- Base de datos Docker (PostgreSQL 17, puerto 55432): 90 tablas (incluida `migracion_esquema`;
+  `V1`–`V8`) + datos base. Los datos de demostración son opcionales y solo para desarrollo/local.
+- El alcance funcional quedó completo; sigue mantenimiento evolutivo, validación con uso real y
+  la implementación del despliegue auto-instalable.
 
 Ver [`docs/`](docs/) para el diseño completo y [`docs/roadmap.md`](docs/roadmap.md) para el avance.

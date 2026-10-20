@@ -14,6 +14,12 @@ Motor: **PostgreSQL**. Acceso: **JDBC**.
 
 ## 1. Núcleo / Organización
 
+### `instalacion`
+`id`, `nombre`, `modo` (`UNICA_EMPRESA` | `MULTIEMPRESA`), `version_esquema`, `creado_en`,
+`actualizado_en`. Metadatos de la instalación. Una base PostgreSQL por instalación; esta tabla
+**no** convierte el modelo en multi-tenant compartido. La fila la crea el asistente de primer
+arranque (`V8`).
+
 ### `empresa`
 `id`, `ruc`, `razon_social`, `nombre_comercial`, `direccion_matriz`, `telefono`, `email`, `logo_path`, `contribuyente_especial` (bool), `obligado_llevar_contabilidad` (bool), `regimen` (GENERAL | RIMPE_EMPRENDEDOR | RIMPE_NEGOCIO_POPULAR), `moneda` (default `USD`), `activo`, auditoría.
 
@@ -327,6 +333,7 @@ Motor: **PostgreSQL**. Acceso: **JDBC**.
 | `V5` | `reporte_guardado`. |
 | `V6` | `respaldo.detalle`. |
 | `V7` | Índices de rendimiento para ventas, inventario, CxC/CxP, comprobantes, auditoría y paginación. |
+| `V8` | `instalacion` (metadatos del primer arranque). |
 
 ## 10. Relación rápida de cardinalidades clave
 - Empresa 1—N Sucursal 1—N Bodega; Sucursal 1—N Caja.

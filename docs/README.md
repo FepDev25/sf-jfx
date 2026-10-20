@@ -7,10 +7,14 @@ Documentación de diseño del sistema de facturación para supermercados.
 | [`decisiones.md`](decisiones.md) | Bitácora de decisiones por fase (stack, alcance, entidades, UI). Fuente de verdad de "qué se decidió". |
 | [`modelo-datos.md`](modelo-datos.md) | Entidades y atributos del core, agrupados por módulo. |
 | [`vistas-ui.md`](vistas-ui.md) | Inventario de pantallas necesarias y quién las usa. |
-| [`roadmap.md`](roadmap.md) | Arquitectura de módulos Maven y hitos de construcción (con casillas de avance). |
+| [`roadmap.md`](roadmap.md) | Arquitectura de módulos Maven, hitos de construcción y pendientes. |
 | [`datos-demo.md`](datos-demo.md) | Credenciales, contenido de la semilla masiva y escenarios de prueba. |
+| [`adr/`](adr/) | Decisiones de arquitectura (ADR). La primera define el modelo de despliegue. |
 | [`mockups/`](mockups/) | Prototipos visuales HTML de las pantallas clave. |
 
-Estado: **Hitos 0 a 11 cerrados**. Alcance congelado completo; sigue mantenimiento evolutivo.
+Estado: **Hitos 0 a 11 cerrados**. Alcance funcional congelado. El **Hito 12 (despliegue
+auto-instalable)** está documentado en el [ADR-0001](adr/0001-modelo-despliegue-single-tenant.md):
+**Fases 0 y 1 completadas** (semillas fuera del arranque y del producto, asistente de primer
+arranque); Fases 2–3 pendientes.
 
 Para probar la aplicación: [`datos-demo.md`](datos-demo.md) (usuarios, datos y reinicio del entorno).

@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -53,6 +55,46 @@ public final class AppConfig {
         cargada = false;
         PROPIEDADES.clear();
         cargar();
+    }
+
+    /**
+     * Guarda o actualiza valores en el archivo de configuracion externo.
+     *
+     * <p>Conserva las claves existentes y recarga la configuracion en memoria. Se usa desde el
+     * asistente de instalacion para persistir la conexion y el entorno.
+     */
+    public static synchronized void guardar(Map<String, String> valores) {
+        if (valores == null || valores.isEmpty()) {
+            return;
+        }
+        Path ruta = resolverRutaExterna();
+        try {
+            if (ruta.getParent() != null) {
+                Files.createDirectories(ruta.getParent());
+            }
+            Properties propiedades = new Properties();
+            if (Files.isRegularFile(ruta)) {
+                try (InputStream entrada = Files.newInputStream(ruta)) {
+                    propiedades.load(entrada);
+                }
+            }
+            for (Map.Entry<String, String> entrada : valores.entrySet()) {
+                if (entrada.getValue() != null) {
+                    propiedades.setProperty(entrada.getKey(), entrada.getValue());
+                }
+            }
+            try (var salida = Files.newOutputStream(ruta)) {
+                propiedades.store(salida, "sfjfx - configuracion de instalacion");
+            }
+            try {
+                Files.setPosixFilePermissions(ruta, PosixFilePermissions.fromString("rw-------"));
+            } catch (UnsupportedOperationException | IOException ignored) {
+                // Sistemas sin permisos POSIX (por ejemplo Windows): se conserva el permiso por defecto.
+            }
+            recargar();
+        } catch (IOException e) {
+            throw new IllegalStateException("No se pudo guardar la configuracion en " + ruta, e);
+        }
     }
 
     public static String obtener(String clave) {

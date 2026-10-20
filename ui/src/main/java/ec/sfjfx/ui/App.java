@@ -4,7 +4,9 @@ import ec.sfjfx.core.config.AppConfig;
 import ec.sfjfx.core.db.ConexionBD;
 import ec.sfjfx.core.seguridad.Sesion;
 import ec.sfjfx.core.seguridad.SesionActual;
+import ec.sfjfx.core.servicio.ServicioInstalacion;
 import ec.sfjfx.ui.util.Alertas;
+import ec.sfjfx.ui.vistas.AsistenteInstalacion;
 import ec.sfjfx.ui.vistas.LoginView;
 import ec.sfjfx.ui.vistas.Shell;
 
@@ -34,25 +36,59 @@ public class App extends Application {
         escenario.setMinHeight(650);
 
         verificarBaseDeDatos();
-        mostrarLogin();
+        iniciar();
         escenario.show();
+    }
+    private void iniciar() {
+        boolean conectado;
+        try {
+            conectado = ConexionBD.probar();
+        } catch (RuntimeException e) {
+            conectado = false;
+        }
+        if (!conectado) {
+            mostrarAsistente("No se pudo conectar a la base de datos.\n"
+                    + "Configure la conexion en este asistente para continuar.");
+            return;
+        }
+        try {
+            ServicioInstalacion servicio = new ServicioInstalacion();
+            servicio.prepararEsquema();
+            if (servicio.requiereInstalacion()) {
+                mostrarAsistente(null);
+            } else {
+                mostrarLogin(null, null);
+            }
+        } catch (RuntimeException e) {
+            mostrarAsistente("No se pudo preparar la base de datos: " + e.getMessage());
+        }
     }
 
     private void verificarBaseDeDatos() {
         try {
             AppConfig.cargar();
-            if (!ConexionBD.probar()) {
-                Alertas.error("Sin conexion",
-                        "No se pudo conectar a la base de datos.\n"
-                        + "Verifique la configuracion y que el contenedor este en marcha.");
-            }
         } catch (RuntimeException e) {
             Alertas.error("Configuracion", e.getMessage());
         }
     }
 
+    private void mostrarAsistente(String mensaje) {
+        aplicarEscena(new AsistenteInstalacion(this::alInstalar, mensaje));
+        escenario.setTitle(TITULO + " — Instalacion");
+    }
+
+    private void alInstalar(String usuario) {
+        Alertas.info("Instalacion completada",
+                "La instalacion se completo. Ingrese con el usuario " + usuario + ".");
+        mostrarLogin(usuario, "Instalacion completada. Ingrese con su usuario.");
+    }
+
     private void mostrarLogin() {
-        LoginView login = new LoginView(this::alIngresar);
+        mostrarLogin(null, null);
+    }
+
+    private void mostrarLogin(String usuarioInicial, String mensaje) {
+        LoginView login = new LoginView(this::alIngresar, usuarioInicial, mensaje);
         aplicarEscena(login);
         escenario.setTitle(TITULO);
     }

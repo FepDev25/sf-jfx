@@ -11,5 +11,6 @@ look & feel antes de implementar cada vista. Dirección de arte: **moderno claro
 | [`shell.html`](shell.html) | Shell + Dashboard | Hito 0 / Hito 9 |
 | [`pos.html`](pos.html) | Modo Caja (POS) | Hito 5 |
 | [`producto.html`](producto.html) | Editor de producto | Hito 2 |
+| [`asistente-instalacion.html`](asistente-instalacion.html) | Asistente de primer arranque | Hito 12 / Fase 1 |
 
 Estilos compartidos en [`estilos.css`](estilos.css).
