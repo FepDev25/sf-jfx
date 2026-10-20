@@ -178,7 +178,7 @@ prueba y cómo reiniciar el entorno.
   mvn -pl core exec:java -Dexec.args="respaldo"   # genera y verifica un respaldo
   mvn -pl core exec:java -Dexec.args="salud"      # healthcheck: código de salida 0/1
   ```
-- **Registro con rotación** en `~/.sfjfx/logs/sfjjx-YYYY-MM-DD.log`.
+- **Registro con rotación** en `~/.sfjfx/logs/sfjfx-YYYY-MM-DD.log`.
 - **Licencia perpetua + mantenimiento anual** en archivo firmado offline. La pantalla
   **Configuración → Licencia** muestra el código de instalación y permite cargar/renovar.
 - **Modo consulta**: sin licencia vigente (tras el periodo de prueba) o con mantenimiento vencido

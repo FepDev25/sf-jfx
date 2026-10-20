@@ -10,6 +10,7 @@ Documentación de diseño del sistema de facturación para supermercados.
 | [`roadmap.md`](roadmap.md) | Arquitectura de módulos Maven, hitos de construcción y pendientes. |
 | [`datos-demo.md`](datos-demo.md) | Credenciales, contenido de la semilla masiva y escenarios de prueba. |
 | [`adr/`](adr/) | Decisiones de arquitectura (ADR). La primera define el modelo de despliegue. |
+| [`dist/`](../dist/) | Plantillas de empaquetado, actualización y operación (Linux/Windows). |
 | [`mockups/`](mockups/) | Prototipos visuales HTML de las pantallas clave. |
 
 Estado: **Hitos 0 a 11 cerrados**. Alcance funcional congelado. El **Hito 12 (despliegue

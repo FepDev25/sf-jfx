@@ -438,7 +438,7 @@ multi-tenant solo se reevaluará si se cumplen las condiciones de la sección 4A
 | # | Tema | Decisión |
 |---|------|----------|
 | 1 | Plataformas | **Windows y Linux**. Instalador nativo para ambos. |
-| 2 | PostgreSQL | **Incluido en el instalador**. Instancia local administrada por el instalador; Docker como alternativa para servidor. |
+| 2 | PostgreSQL | **Incluido en el instalador**. Instancia local administrada por el instalador, con puerto libre detectado y credenciales aleatorias. |
 | 3 | Modo por defecto | **`UNICA_EMPRESA`**; `MULTIEMPRESA` se habilita explícitamente como opción avanzada. |
 | 4 | Semillas | **Nunca en el instalador ni en producción.** Solo herramienta local del desarrollador, ejecutada manualmente en su PC. |
 
