@@ -292,6 +292,15 @@ consulta, canal de updates firmado y plantillas `dist/` para Linux/Windows. 86 p
 (83 `core` + 3 `dev`). Pendiente: generar/firmar instaladores reales, validar actualización y
 rollback de punta a punta y PostgreSQL incluido en campo.
 
+**Avance laboratorio homelab (2026-10-22):** `app-image` Linux construido y validado en Debian
+con una instalación limpia (`UNICA_EMPRESA`, `V1`–`V9`). Se validaron desde el artefacto
+instalado: `Arranque salud` (código 0), respaldo verificado (349,9 KB), restauración en base
+temporal (91 tablas), migraciones desde el runtime, licencia válida, modo consulta con bloqueo
+real de cobro y canal `file:` firmado. La UI remota se validó con **Xvfb + x11vnc**; `ssh -X`
+queda descartado para uso interactivo por el bloqueo de subida de píxeles de JavaFX. Pendiente:
+instalador con PostgreSQL incluido, Windows, HTTPS, firma de paquetes y rollback de punta a
+punta.
+
 ### Fase 3 (opcional) — Gestión de instancias `[PENDIENTE]`
 
 - [ ] Panel de instancias: cliente, versión, último respaldo, salud y licencia.
@@ -322,6 +331,11 @@ automática.
 Trabajo que quedó abierto, en orden de ejecución recomendado.
 
 ### 1. Cerrar la Fase 2 (requiere entorno de release)
+
+> **Actualización 2026-10-22:** 1.1 completado en el laboratorio Debian (`app-image` Linux
+> validado con JavaFX, asistente y healthcheck). 2.1/2.2 probados parcialmente con un manifiesto
+> `file:` firmado y descarga verificada; HTTPS, UI de actualizaciones y rollback siguen
+> pendientes.
 
 | # | Tarea | Depende de |
 |---|-------|------------|

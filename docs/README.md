@@ -19,6 +19,10 @@ auto-instalable)** está documentado en el [ADR-0001](adr/0001-modelo-despliegue
 **Fases 0 y 1 completadas; Fase 2 en curso** (base operativa, respaldos, licencia, modo consulta,
 logs, healthcheck y updates; empaquetado nativo pendiente de release); Fase 3 pendiente.
 
+El laboratorio de release en Debian validó el `app-image` Linux, el primer arranque, el
+healthcheck, respaldo/restauración, migraciones desde el jar, licencia y modo consulta; el
+detalle y los pendientes están en [`plan-migracion-homelab.md`](plan-migracion-homelab.md).
+
 Lo que queda abierto está en
 [roadmap.md → Pendientes para la próxima sesión](roadmap.md#pendientes-para-la-próxima-sesión).
 

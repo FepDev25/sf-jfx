@@ -62,9 +62,58 @@ Genera un `app-image` o paquete `.deb`/`.rpm` según las herramientas disponible
 4. Excluye explícitamente el módulo `dev`.
 5. Invoca `jpackage` con el launcher `sf-jfx`.
 
-> **Pendiente de validación:** el empaquetado con `jpackage` y el arranque de JavaFX desde el
-> `app-image` todavía no se han probado en este entorno. Es la primera tarea de la próxima
-> sesión.
+> **Validado en Debian (2026-10-22):** el `app-image` arranca con JavaFX, el asistente crea una
+> instalación limpia y la UI es usable por VNC. La receta está más abajo. Siguen pendientes el
+> PostgreSQL incluido, Windows y la firma de paquetes.
+
+### Receta validada de `app-image` (Linux/Debian)
+
+`jpackage --input` por sí solo falla con *“faltan los componentes de JavaFX runtime”*. Añadir
+solo `--add-modules javafx.*` deja el runtime sin `java.sql`. La receta que funciona es construir
+un runtime completo con `jlink` y pasarlo a `jpackage`:
+
+```bash
+JAVA_HOME=$(dirname "$(dirname "$(readlink -f "$(which java)")")")
+mvn -DskipTests install
+mkdir -p build/input build/javafx
+cp ui/target/ui-*.jar core/target/core-*.jar build/input/
+mvn -pl ui dependency:copy-dependencies -DincludeScope=runtime -DoutputDirectory=build/input
+cp build/input/javafx-*-linux.jar build/javafx/
+find build/input -maxdepth 1 -name 'javafx-*-21.0.5.jar' ! -name '*-linux.jar' -delete
+
+jlink --module-path "$JAVA_HOME/jmods:build/javafx" --add-modules ALL-MODULE-PATH \
+  --output build/runtime --strip-debug --no-header-files --no-man-pages
+
+jpackage --type app-image --name sf-jfx --app-version "$VERSION" \
+  --runtime-image build/runtime --input build/input \
+  --main-jar ui-0.1.0-SNAPSHOT.jar --main-class ec.sfjfx.ui.App \
+  --dest build/dist --java-options "-Dfile.encoding=UTF-8"
+```
+
+> Ajuste `ui-0.1.0-SNAPSHOT.jar` y las versiones de JavaFX/JDK al build. El runtime resultante
+> incluye todos los módulos del JDK; es más grande, pero evita los fallos por módulos faltantes.
+
+### GUI remota para staging
+
+`ssh -X` no es adecuado para una UI JavaFX interactiva: el hilo de JavaFX se bloquea en
+`GtkView._uploadPixelsDirect` subiendo píxeles y el escritorio la marca como “No responde”.
+Para el laboratorio se usa un display virtual y VNC sobre túnel SSH:
+
+```bash
+# En Debian
+Xvfb :99 -screen 0 1280x800x24 -nolisten tcp &
+DISPLAY=:99 openbox &
+x11vnc -display :99 -localhost -nopw -forever -shared -rfbport 5900 &
+DISPLAY=:99 SFJFX_CONFIG=~/.sfjfx/sfjfx-staging.properties \
+  JAVA_TOOL_OPTIONS="-Duser.home=$HOME/sfjfx-staging-home -Dprism.order=sw" \
+  ~/sf-jfx-build/dist/sf-jfx/bin/sf-jfx &
+
+# En Arch
+ssh -N -L 5900:127.0.0.1:5900 ssh.fepdev.app
+gvncviewer 127.0.0.1:0
+```
+
+`x11vnc` escucha solo en `127.0.0.1`; no se publica por Cloudflare ni por la red.
 
 ### Windows
 

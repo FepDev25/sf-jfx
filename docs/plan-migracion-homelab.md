@@ -1,6 +1,6 @@
 # Plan de migración al homelab y laboratorio de release — sf-jfx
 
-- **Estado:** `EN EJECUCIÓN` — Fases 0 a 4 completadas (2026-10-22); Fase 5 pendiente.
+- **Estado:** `EN EJECUCIÓN` — Fases 0 a 6 completadas (2026-10-22); Fases 7 y 8 pendientes.
 - **Fecha:** 2026-10-22.
 - **Ámbito:** sacar Docker y PostgreSQL de Arch para sf-jfx, migrar sus bases al servidor
   Debian y convertir ese servidor en el banco de pruebas de release (staging).
@@ -43,7 +43,7 @@ DEBIAN (homelab, PostgreSQL 17.11 nativo en 127.0.0.1:5432)
   └─ sfjfx_staging   (instalación limpia; release lab)
 
   AppImage sf-jfx (staging, bajo demanda)
-  └─ GUI: ssh -X (validado en LAN y Cloudflare) o noVNC si va lento
+  └─ GUI: Xvfb + x11vnc (VNC sobre túnel SSH); ssh -X no es usable para JavaFX
 ```
 
 ### Matriz de entornos
@@ -75,7 +75,7 @@ solo de su base. Contraseñas aleatorias en archivos `0600`; nunca en Git ni en 
 | Servidor | Debian 13, PostgreSQL 17.11, 2 vCPU, 3,7 GiB RAM (~2,2 GiB disponibles), HDD, 542 GB libres |
 | Toolchain servidor | JDK 21.0.12.1, Maven 3.9.9, `jpackage`, GTK3, XFCE instalado; LightDM inactivo |
 | Túnel | `127.0.0.1:15432` → Debian `127.0.0.1:5432`, activo |
-| IPv6 loopback | **Corregido y persistido:** `lo.disable_ipv6=0`, `::1/128` presente; `ssh -X` funciona en LAN y Cloudflare |
+| IPv6 loopback | **Corregido y persistido:** `lo.disable_ipv6=0`, `::1/128` presente. `ssh -X` responde, pero la UI JavaFX se congela por la subida de píxeles; se usa VNC |
 | Glibc | Arch 2.44 vs Debian 2.41 → el `app-image` debe construirse en Debian, no en Arch |
 | Licencias | Clave privada en `~/.sfjfx/licencias/private-key.pem` (Arch); debe quedar en `0600` |
 | Pruebas | 86 verdes con PostgreSQL; sin BD, 39 de integración se saltan en silencio |
@@ -101,14 +101,15 @@ solo de su base. Contraseñas aleatorias en archivos `0600`; nunca en Git ni en 
 | 2 — Tests | — | config y `mvn test` | — | — |
 | 3 — Dev/demo | config y `javafx:run` | verificación de datos | smoke test de la UI | — |
 | 4 — Retiro Docker | `docker compose down -v` | — | confirmar el borrado | — |
-| 5 — Staging | lanzar por `ssh -X` | build y configuración | ver la ventana | completar el asistente |
+| 5 — Staging | lanzar por VNC | build y configuración | ver la ventana | completar el asistente |
 | 6 — Validaciones | emitir licencia de staging | healthcheck, backups, restore, modo consulta | aprobar la licencia | — |
 | 7 — Ubuntu | — | — | — | futura |
 | 8 — Docker global | — | — | — | futura |
 
 ### Precondiciones
 
-- `ssh` al Debian funciona por LAN y por Cloudflare; `ssh -X ... true` devuelve 0.
+- `ssh` al Debian funciona por LAN y por Cloudflare; `ssh -X ... true` devuelve 0 (el forwarding
+  funciona, pero para la UI JavaFX se usa Xvfb + x11vnc).
 - El túnel `127.0.0.1:15432` está activo y `pg_isready` responde.
 - Felipe tiene acceso `sudo` en el Debian para roles, bases y paquetes.
 - El servidor conserva JDK 21, Maven 3.9.9 y `jpackage`; la Fase 0 no instala nada.
@@ -237,7 +238,7 @@ confirmación final.
 
 ---
 
-### Fase 5 — Staging y release lab `[ ]`
+### Fase 5 — Staging y release lab `[x]`
 
 **Objetivo:** construir y ejecutar la aplicación como instalación real en el Debian.
 
@@ -246,24 +247,37 @@ confirmación final.
 | 5.1 | Construir `app-image` con `jpackage` en Debian (no en Arch) | Agente | Debian |
 | 5.2 | Crear un `user.home` aislado para staging (`~/sfjfx-staging-home`) | Agente | Debian |
 | 5.3 | Configurar `sfjfx_staging` y `app.entorno=prod` para probar el asistente real (es el flag de entorno de la app, no producción real) | Agente | Debian |
-| 5.4 | Lanzar la UI con `ssh -X` desde Arch | Agente + Usuario (GUI) | Arch → Debian |
+| 5.4 | Lanzar la UI con **Xvfb + x11vnc** (VNC sobre túnel SSH). `ssh -X` no es viable: el hilo de JavaFX se bloquea subiendo píxeles | Agente + Usuario (GUI) | Debian → Arch |
 | 5.5 | Completar el asistente: empresa, RUC, sucursal, bodega, caja, administrador | Usuario (GUI) | Debian |
-| 5.6 | Validar login, POS, reportes y persistencia en `sfjfx_staging` | Usuario (GUI) | Debian |
-| 5.7 | Si `ssh -X` va lento, evaluar noVNC o xrdp como fallback | Agente + Usuario | Debian |
+| 5.6 | Validar login y dashboard; crear el primer producto si se quiere probar el POS | Usuario (GUI) | Debian |
+| 5.7 | Documentar el hallazgo gráfico y dejar el script de arranque de staging | Agente | Debian |
 
 **Nota:** el `app-image` debe construirse en Debian por la diferencia de glibc. El script
 `dist/linux/construir-instalador.sh` todavía tiene pendiente incluir PostgreSQL dentro del
 `app-image`; para staging usaremos el PostgreSQL nativo y dejamos el empaquetado completo para
 la fase de release.
 
+**Hallazgos de empaquetado y GUI (2026-10-22):**
+
+- `jpackage --input` con los jars de la app falla con *“faltan los componentes de JavaFX runtime”*.
+- Añadir `--module-path` + `--add-modules javafx.controls,javafx.fxml` arregla JavaFX, pero el
+  runtime queda sin `java.sql` y falla al iniciar.
+- La receta que funciona es construir un runtime completo con
+  `jlink --add-modules ALL-MODULE-PATH --module-path "$JAVA_HOME/jmods:javafx-modules"` y luego
+  `jpackage --runtime-image runtime --input input ...`.
+- `ssh -X` no sirve para una UI JavaFX interactiva: el thread dump muestra el hilo de JavaFX en
+  `GtkView._uploadPixelsDirect`, subiendo píxeles sin parar; el escritorio la marca como “No
+  responde”. La vía usable es **Xvfb + x11vnc + cliente VNC sobre túnel SSH**.
+
 **Criterio de aceptación:** el `app-image` arranca desde el servidor, el asistente crea la
-instalación y la UI es usable por `ssh -X`.
+instalación y la UI es usable por VNC. ✔ (login y dashboard validados; el POS se probó en el
+entorno dev con datos demo).
 
 **Rollback:** borrar `sfjfx_staging` y el directorio de staging; no afecta a dev/test.
 
 ---
 
-### Fase 6 — Validaciones de la Fase 2 del roadmap `[ ]`
+### Fase 6 — Validaciones de la Fase 2 del roadmap `[x]`
 
 **Objetivo:** cerrar con evidencia los pendientes de release del Hito 12.
 
@@ -278,8 +292,22 @@ instalación y la UI es usable por `ssh -X`.
 | 6.7 | Canal de actualización con `file:` y manifiesto firmado; luego HTTPS si aplica | Agente | Debian |
 | 6.8 | Actualizar roadmap/ADR con los resultados | Agente | Repo |
 
+**Resultado (2026-10-22):**
+
+- **6.1** `Arranque salud` desde el `app-image`: `salud_exit=0`, esquema `1..9`, instalación
+  `capeva s.a`, `licencia: valida`.
+- **6.2** `Arranque respaldo`: respaldo de 349,9 KB, `Verificado: true`.
+- **6.3** Restauración en `sfjfx_restore_test`: 91 tablas, 1 instalación, 1 empresa, 1 usuario,
+  9 migraciones.
+- **6.4** Migraciones desde el runtime del `app-image` sobre `sfjfx_migracion_test`: `V1`–`V9`,
+  91 tablas.
+- **6.5/6.6** Licencia válida y licencia vencida: `salud` mostró `MODO CONSULTA`; el servicio
+  rechazó el cobro con *“La instalacion esta en modo consulta…”* y la UI mostró la banda.
+- **6.7** Canal `file:`: manifiesto firmado, versión `0.2.0`, SHA-256 verificado y paquete
+  descargado. HTTPS y actualización de punta a punta quedan para la fase de release.
+
 **Criterio de aceptación:** healthcheck 0; respaldo/restauración verificados; migraciones desde
-el jar; licencia y modo consulta funcionando; manifiesto de updates verificado.
+el jar; licencia y modo consulta funcionando; manifiesto de updates verificado. ✔
 
 **Rollback:** restaurar `sfjfx_staging` desde el respaldo; retirar la licencia de prueba.
 
@@ -318,8 +346,8 @@ el jar; licencia y modo consulta funcionando; manifiesto de updates verificado.
 5. **No hacer** `docker system prune --volumes`, `docker volume prune`, `DROP DATABASE` ni
    borrados de datos sin confirmación explícita.
 6. **Pool pequeño** en dev/staging (`db.pool.maximo=5`) por RAM y por `max_connections=100`.
-7. **GUI:** `ssh -X` funciona en LAN y por Cloudflare. Si se usa VNC/xrdp, escuchar solo en
-   `127.0.0.1` y acceder por túnel SSH; nunca publicarlo.
+7. **GUI:** la vía usable es Xvfb + x11vnc (o xrdp), escuchando solo en `127.0.0.1` y accedida
+   por túnel SSH; nunca publicarla. `ssh -X` queda para pruebas puntuales no interactivas.
 8. **Cambios de infraestructura:** el usuario con `sudo` es quien crea roles/bases, instala
    paquetes y desinstala Docker.
 
@@ -343,10 +371,10 @@ el jar; licencia y modo consulta funcionando; manifiesto de updates verificado.
       autoridad.
 - [x] `mvn test` corre en el Debian con 86/86 verdes y 0 saltos.
 - [x] La UI de Arch funciona contra `sfjfx_dev` por el túnel.
-- [ ] El `app-image` de staging arranca en Debian y el asistente crea una instalación limpia.
-- [ ] `Arranque salud` devuelve 0 desde el artefacto instalado.
-- [ ] Respaldo, restauración y migraciones desde el jar están verificados.
-- [ ] Licencia y modo consulta se validan de extremo a extremo.
+- [x] El `app-image` de staging arranca en Debian y el asistente crea una instalación limpia.
+- [x] `Arranque salud` devuelve 0 desde el artefacto instalado.
+- [x] Respaldo, restauración y migraciones desde el jar están verificados.
+- [x] Licencia y modo consulta se validan de extremo a extremo.
 - [x] `neonvibe` y `desarrollo` siguen activas; no se modificaron.
 - [x] La documentación refleja el nuevo flujo sin Docker local.
 
@@ -357,7 +385,7 @@ el jar; licencia y modo consulta funcionando; manifiesto de updates verificado.
 | 1 | Usuario para staging | `felipep` con `user.home` aislado; sin usuario de sistema adicional |
 | 2 | `docker-compose.yml` | Se mantiene como opción documentada para otros desarrolladores/CI; no se usa en este Arch |
 | 3 | Dónde corren los tests | En Debian contra `sfjfx_test` (86/86 verdes) |
-| 4 | Licencia de staging | Pendiente para Fase 6: primero periodo de prueba, luego licencia firmada |
+| 4 | Licencia de staging | Emitida y validada; también se probó una licencia vencida para modo consulta |
 | 5 | Nombres de bases/roles | `sfjfx_dev`, `sfjfx_test`, `sfjfx_staging` (creados y verificados) |
 
 ## 10. Registro de avance
@@ -369,12 +397,14 @@ el jar; licencia y modo consulta funcionando; manifiesto de updates verificado.
 | 2 — Tests sin Docker | `[x]` | 2026-10-22 | 86/86 verdes en Debian, 0 saltos |
 | 3 — Dev/demo desde Arch | `[x]` | 2026-10-22 | UI contra `sfjfx_dev` por el túnel; smoke test de venta correcto |
 | 4 — Retiro de Docker sf-jfx | `[x]` | 2026-10-22 | `docker compose down -v`; sin contenedor/volumen; README y `datos-demo.md` actualizados |
-| 5 — Staging y release lab | `[ ]` | — | — |
-| 6 — Validaciones Fase 2 | `[ ]` | — | — |
+| 5 — Staging y release lab | `[x]` | 2026-10-22 | `app-image` Debian, wizard, login y dashboard vía Xvfb+x11vnc; `ssh -X` descartado por freeze de píxeles |
+| 6 — Validaciones Fase 2 | `[x]` | 2026-10-22 | Healthcheck 0, backup/restore, migraciones desde jar, licencia válida/vencida, modo consulta y canal `file:` |
 | 7 — Compatibilidad Ubuntu | `[ ]` | — | Futura |
 | 8 — Salida global de Docker | `[ ]` | — | Futura, fuera de alcance |
 
 ---
 
-**Siguiente paso:** validar este documento y las cinco decisiones pendientes. Después se ejecuta
-la Fase 0 y se reporta el dump verificado y el build en Debian antes de pedir el primer `sudo`.
+**Siguiente paso:** Fases 0–6 completadas. Quedan la compatibilidad con Ubuntu (Fase 7), la
+salida global de Docker de Arch (Fase 8) y los pendientes de release del roadmap (PostgreSQL
+incluido, Windows, HTTPS, firma de paquetes y rollback de punta a punta). Eliminar las bases
+temporales `sfjfx_restore_test` y `sfjfx_migracion_test` tras la validación.

@@ -256,8 +256,9 @@ Antes de una actualización, genere y verifique un respaldo; consulte
 - **Hito 12 — Despliegue auto-instalable:** **Fases 0 y 1 completadas; Fase 2 en curso.** Fase 0:
   arranque solo migraciones y semillas aisladas en `dev`. Fase 1: asistente de primer arranque con
   `V8`. Fase 2: HikariCP, advisory lock, respaldo verificado, licencia offline, modo consulta,
-  estado de instalación y canal de updates firmado; instaladores y actualización de punta a
-  punta pendientes de validación en release. 86 pruebas verdes. Ver
+  estado de instalación y canal de updates firmado; `app-image` Linux validado en el laboratorio
+  Debian, con instaladores con PostgreSQL incluido, Windows y actualización de punta a punta
+  pendientes. 86 pruebas verdes. Ver
   [ADR-0001](docs/adr/0001-modelo-despliegue-single-tenant.md).
 - **Desarrollo en el homelab:** PostgreSQL 17 en Debian (`sfjfx_dev`, `sfjfx_test`,
   `sfjfx_staging`), 91 tablas (`V1`–`V9`) + datos base. Arch no ejecuta PostgreSQL ni Docker para
