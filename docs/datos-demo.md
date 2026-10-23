@@ -3,15 +3,29 @@
 Semilla masiva para probar la aplicación sin cargar datos a mano. Es **idempotente**: se aplica
 una sola vez y se registra en `configuracion` con la clave `demo.seed_version`.
 
+> **Entorno del homelab:** la base de desarrollo vive en el servidor Debian (`sfjfx_dev`) y se
+> accede por el túnel SSH. Arch no ejecuta PostgreSQL ni Docker para sf-jfx. El `docker-compose.yml`
+> queda como alternativa opcional para otros desarrolladores/CI.
+
 ## Cómo cargarla (entorno local)
 
-Con PostgreSQL levantado y la configuración local lista (`app.entorno=dev`):
+### Homelab (recomendado en este equipo)
+
+Con el túnel activo y `~/.sfjfx/sfjfx-server.properties` apuntando a `sfjfx_dev`:
+
+```bash
+mvn -pl core install -DskipTests    # instala core actualizado en ~/.m2
+SFJFX_CONFIG=~/.sfjfx/sfjfx-server.properties mvn -pl core exec:java   # migraciones
+SFJFX_CONFIG=~/.sfjfx/sfjfx-server.properties mvn -pl dev exec:java    # semilla demo
+```
+
+### Docker local (opcional)
 
 ```bash
 docker compose up -d
-mvn -pl core install -DskipTests    # instala core actualizado en ~/.m2
-mvn -pl core exec:java              # solo migraciones
-mvn -pl dev exec:java               # semilla demo completa (solo desarrollo/local)
+mvn -pl core install -DskipTests
+mvn -pl core exec:java
+mvn -pl dev exec:java
 ```
 
 > **Estado actual (Fases 0 y 1 implementadas; Fase 2 en curso):** `Arranque` solo aplica las
@@ -26,7 +40,11 @@ mvn -pl dev exec:java               # semilla demo completa (solo desarrollo/loc
 
 Si la semilla ya estaba aplicada, el comando no duplica datos. Para volver a empezar desde cero:
 
-> **Advertencia:** el siguiente comando elimina el volumen de PostgreSQL y todos los datos.
+> **Advertencia:** recrear `sfjfx_dev` en el homelab requiere autorización y un paso con `sudo`
+> (`DROP DATABASE`/`CREATE DATABASE`); después se aplican migraciones + semilla o se restaura el
+> dump. No lo hagas sin respaldo verificado.
+
+En el Docker local opcional:
 
 ```bash
 docker compose down -v
@@ -38,10 +56,11 @@ mvn -pl dev exec:java
 
 ## Probar el asistente de instalación (Fase 1)
 
-Para probar una instalación real en la PC del desarrollador:
+Para probar una instalación real de staging en el Debian:
 
-1. Base limpia y migraciones aplicadas.
-2. Lanzar la UI: `mvn -pl ui javafx:run`.
+1. Base limpia (`sfjfx_staging`, sin migraciones) y el túnel/configuración listos.
+2. Lanzar la UI **en el Debian** (o por `ssh -X` desde Arch):
+   `SFJFX_CONFIG=~/.sfjfx/sfjfx-staging.properties mvn -pl ui javafx:run`.
 3. Completar el asistente: conexión, empresa/RUC/régimen, sucursal/bodega/caja y administrador.
    No hay credenciales por defecto ni datos de demostración.
 4. Opcional: cargar la semilla demo con `mvn -pl dev exec:java` (solo si `app.entorno=dev`).

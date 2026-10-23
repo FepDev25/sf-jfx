@@ -67,6 +67,17 @@ mvn clean package       # compila y ejecuta las 86 pruebas
 mvn test                # solo pruebas
 ```
 
+Las pruebas de integración necesitan PostgreSQL. En el entorno del homelab se ejecutan en el
+servidor Debian contra `sfjfx_test` (ver [Plan de migración al homelab](docs/plan-migracion-homelab.md)):
+
+```bash
+rsync -az --delete --exclude target/ --exclude .git/ --exclude .idea/ --exclude server-homelab.md ./ ssh.fepdev.app:~/sf-jfx/
+ssh ssh.fepdev.app 'cd ~/sf-jfx && mvn test'
+```
+
+Sin una base disponible, las pruebas de integración se **saltan en silencio**: el resultado
+`47 run / 39 skipped` no es una validación completa.
+
 ## Ejecutar la UI
 
 Instala los módulos en el repositorio local (una vez, o cada vez que cambie `core`) y luego lanza la UI:
@@ -74,6 +85,12 @@ Instala los módulos en el repositorio local (una vez, o cada vez que cambie `co
 ```bash
 mvn install -DskipTests
 mvn -pl ui javafx:run
+```
+
+En el entorno del homelab, la UI de Arch se conecta a `sfjfx_dev` en el Debian por el túnel SSH:
+
+```bash
+SFJFX_CONFIG=~/.sfjfx/sfjfx-server.properties mvn -pl ui javafx:run
 ```
 
 > Por qué no `mvn -am -pl ui javafx:run`: al invocar un goal de plugin desde la línea de
@@ -94,10 +111,32 @@ No se crean credenciales por defecto ni datos de demostración: el administrador
 contraseña. Para una prueba local, elija **Desarrollo local** y, si desea datos de demostración,
 ejecute `mvn -pl dev exec:java` después de instalar.
 
-## Base de datos (Docker)
+## Base de datos
 
-PostgreSQL corre en Docker, en el puerto **55432** (host) mapeado a 5432 (contenedor),
-con volumen persistente `sfjfx-datos`.
+### Entorno del homelab (recomendado en este equipo)
+
+La base de desarrollo vive en el servidor Debian, en PostgreSQL 17 nativo, y se accede por el
+túnel SSH existente (`127.0.0.1:15432` → `127.0.0.1:5432`). Arch no ejecuta PostgreSQL ni Docker
+para este proyecto.
+
+| Base | Uso | Configuración |
+|---|---|---|
+| `sfjfx_dev` | Desarrollo/demo desde Arch | `~/.sfjfx/sfjfx-server.properties` |
+| `sfjfx_test` | Pruebas automatizadas en Debian | `~/.sfjfx/sfjfx.properties` (solo en Debian) |
+| `sfjfx_staging` | Laboratorio de release | `~/.sfjfx/sfjfx-staging.properties` |
+
+```bash
+SFJFX_CONFIG=~/.sfjfx/sfjfx-server.properties mvn -pl ui javafx:run
+```
+
+Las credenciales no se versionan. El detalle está en
+[`docs/plan-migracion-homelab.md`](docs/plan-migracion-homelab.md).
+
+### Docker local (opcional, para otros desarrolladores o CI)
+
+El `docker-compose.yml` del repositorio sigue disponible como alternativa reproducible. No se usa
+en el entorno del homelab. PostgreSQL corre en el puerto **55432** (host) mapeado a 5432
+(contenedor), con volumen persistente `sfjfx-datos`.
 
 ```bash
 docker compose up -d      # levanta la BD
@@ -116,7 +155,9 @@ mkdir -p ~/.sfjfx
 cp core/src/main/resources/sfjfx.properties.example ~/.sfjfx/sfjfx.properties
 ```
 
-Para el contenedor Docker, `db.url=jdbc:postgresql://localhost:55432/sfjfx`.
+En el homelab, el archivo de Arch apunta a `sfjfx_dev` por el túnel y el de Debian a `sfjfx_test`
+para las pruebas. Para el contenedor Docker opcional,
+`db.url=jdbc:postgresql://localhost:55432/sfjfx`.
 
 Claves: `db.url`, `db.usuario`, `db.password`, `db.esquema`, `app.entorno` (`dev`/`prod`).
 Si `app.entorno` no se define, se asume `prod`; para desarrollo local use `dev`.
@@ -136,6 +177,13 @@ mvn -pl core exec:java              # arranque normal: solo migraciones
 mvn -pl core install -DskipTests    # instala core actualizado en ~/.m2 (una vez)
 mvn -pl dev exec:java               # semilla demo completa (solo desarrollo/local)
 mvn -pl dev exec:java -Dexec.mainClass=ec.sfjfx.dev.SemillaDesarrollo  # solo empresa base
+```
+
+En el homelab, apunta estas órdenes a la base del Debian con `SFJFX_CONFIG`:
+
+```bash
+SFJFX_CONFIG=~/.sfjfx/sfjfx-server.properties mvn -pl core exec:java
+SFJFX_CONFIG=~/.sfjfx/sfjfx-server.properties mvn -pl dev exec:java
 ```
 
 El módulo `dev` no es dependencia de `core` ni de `ui`; por eso no llega al instalador ni al
@@ -211,8 +259,10 @@ Antes de una actualización, genere y verifique un respaldo; consulte
   estado de instalación y canal de updates firmado; instaladores y actualización de punta a
   punta pendientes de validación en release. 86 pruebas verdes. Ver
   [ADR-0001](docs/adr/0001-modelo-despliegue-single-tenant.md).
-- Base de datos Docker (PostgreSQL 17, puerto 55432): 91 tablas (incluida `migracion_esquema`;
-  `V1`–`V9`) + datos base. Los datos de demostración son opcionales y solo para desarrollo/local.
+- **Desarrollo en el homelab:** PostgreSQL 17 en Debian (`sfjfx_dev`, `sfjfx_test`,
+  `sfjfx_staging`), 91 tablas (`V1`–`V9`) + datos base. Arch no ejecuta PostgreSQL ni Docker para
+  sf-jfx; el `docker-compose.yml` queda como alternativa opcional para otros desarrolladores/CI.
+  Las pruebas se ejecutan en Debian contra `sfjfx_test`.
 - El alcance funcional quedó completo; sigue mantenimiento evolutivo, validación con uso real y
   la implementación del despliegue auto-instalable.
 

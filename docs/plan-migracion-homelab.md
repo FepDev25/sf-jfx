@@ -1,6 +1,6 @@
 # Plan de migración al homelab y laboratorio de release — sf-jfx
 
-- **Estado:** `PROPUESTO` — pendiente de validación antes de ejecutar.
+- **Estado:** `EN EJECUCIÓN` — Fases 0 a 4 completadas (2026-10-22); Fase 5 pendiente.
 - **Fecha:** 2026-10-22.
 - **Ámbito:** sacar Docker y PostgreSQL de Arch para sf-jfx, migrar sus bases al servidor
   Debian y convertir ese servidor en el banco de pruebas de release (staging).
@@ -118,7 +118,7 @@ solo de su base. Contraseñas aleatorias en archivos `0600`; nunca en Git ni en 
 
 ## 5. Fases de ejecución
 
-### Fase 0 — Preparación y seguridad `[ ]`
+### Fase 0 — Preparación y seguridad `[x]`
 
 **Objetivo:** dejar un respaldo verificado y el entorno listo, sin tocar las bases del servidor.
 
@@ -137,7 +137,7 @@ solo de su base. Contraseñas aleatorias en archivos `0600`; nunca en Git ni en 
 
 ---
 
-### Fase 1 — Bases en el Debian `[ ]`
+### Fase 1 — Bases en el Debian `[x]`
 
 **Objetivo:** crear las tres bases y restaurar/sembrar los datos iniciales.
 
@@ -182,7 +182,7 @@ ninguna base existente.
 
 ---
 
-### Fase 2 — Runner de pruebas sin Docker local `[ ]`
+### Fase 2 — Runner de pruebas sin Docker local `[x]`
 
 **Objetivo:** que los 86 tests corran en el servidor contra `sfjfx_test`, sin PostgreSQL local.
 
@@ -200,7 +200,7 @@ ninguna base existente.
 
 ---
 
-### Fase 3 — Dev/demo desde Arch `[ ]`
+### Fase 3 — Dev/demo desde Arch `[x]`
 
 **Objetivo:** usar la UI de Arch contra `sfjfx_dev` por el túnel, sin base local.
 
@@ -217,7 +217,7 @@ ninguna base existente.
 
 ---
 
-### Fase 4 — Retiro de Docker de sf-jfx en Arch `[ ]`
+### Fase 4 — Retiro de Docker de sf-jfx en Arch `[x]`
 
 **Objetivo:** eliminar el contenedor y el volumen de sf-jfx, sin tocar otros proyectos.
 
@@ -338,37 +338,37 @@ el jar; licencia y modo consulta funcionando; manifiesto de updates verificado.
 
 ## 8. Criterios de aceptación del plan
 
-- [ ] Arch no tiene contenedor, volumen ni PostgreSQL de sf-jfx.
-- [ ] `sfjfx_dev`, `sfjfx_test` y `sfjfx_staging` existen en el Debian con roles de mínima
+- [x] Arch no tiene contenedor, volumen ni PostgreSQL de sf-jfx.
+- [x] `sfjfx_dev`, `sfjfx_test` y `sfjfx_staging` existen en el Debian con roles de mínima
       autoridad.
-- [ ] `mvn test` corre en el Debian con 86/86 verdes y 0 saltos.
-- [ ] La UI de Arch funciona contra `sfjfx_dev` por el túnel.
+- [x] `mvn test` corre en el Debian con 86/86 verdes y 0 saltos.
+- [x] La UI de Arch funciona contra `sfjfx_dev` por el túnel.
 - [ ] El `app-image` de staging arranca en Debian y el asistente crea una instalación limpia.
 - [ ] `Arranque salud` devuelve 0 desde el artefacto instalado.
 - [ ] Respaldo, restauración y migraciones desde el jar están verificados.
 - [ ] Licencia y modo consulta se validan de extremo a extremo.
-- [ ] `neonvibe` y `desarrollo` siguen intactas.
-- [ ] La documentación refleja el nuevo flujo sin Docker local.
+- [x] `neonvibe` y `desarrollo` siguen activas; no se modificaron.
+- [x] La documentación refleja el nuevo flujo sin Docker local.
 
-## 9. Decisiones pendientes antes de ejecutar
+## 9. Decisiones aplicadas
 
-| # | Decisión | Propuesta |
+| # | Decisión | Valor |
 |---|---|---|
-| 1 | ¿Staging corre como `felipep` con `user.home` aislado o como usuario de sistema `sfjfx`? | `felipep` + home aislado; menos `sudo` y suficiente para el laboratorio |
-| 2 | ¿Se elimina `docker-compose.yml` o queda como opción para otros desarrolladores? | Mantenerlo como opción documentada, sin usarlo en este Arch |
-| 3 | ¿Los tests se ejecutan en Debian o desde Arch contra el túnel? | En Debian: sin latencia y valida el entorno tipo Ubuntu |
-| 4 | ¿Licencia de staging? | Primero periodo de prueba; luego emitir una licencia de staging con la clave privada de Arch |
-| 5 | ¿Nombres `sfjfx_dev` / `sfjfx_test` / `sfjfx_staging`? | Confirmar antes de crear roles y bases |
+| 1 | Usuario para staging | `felipep` con `user.home` aislado; sin usuario de sistema adicional |
+| 2 | `docker-compose.yml` | Se mantiene como opción documentada para otros desarrolladores/CI; no se usa en este Arch |
+| 3 | Dónde corren los tests | En Debian contra `sfjfx_test` (86/86 verdes) |
+| 4 | Licencia de staging | Pendiente para Fase 6: primero periodo de prueba, luego licencia firmada |
+| 5 | Nombres de bases/roles | `sfjfx_dev`, `sfjfx_test`, `sfjfx_staging` (creados y verificados) |
 
 ## 10. Registro de avance
 
 | Fase | Estado | Fecha | Notas |
 |---|---|---|---|
-| 0 — Preparación y seguridad | `[ ]` | — | — |
-| 1 — Bases en Debian | `[ ]` | — | — |
-| 2 — Tests sin Docker | `[ ]` | — | — |
-| 3 — Dev/demo desde Arch | `[ ]` | — | — |
-| 4 — Retiro de Docker sf-jfx | `[ ]` | — | — |
+| 0 — Preparación y seguridad | `[x]` | 2026-10-22 | Dump 411 KB verificado (920 entradas, SHA-256 `ba5f9cdb…f21a`); build Debian OK |
+| 1 — Bases en Debian | `[x]` | 2026-10-22 | `sfjfx_dev` 91 tablas y conteos del dump; `sfjfx_test` con semilla; `sfjfx_staging` vacía |
+| 2 — Tests sin Docker | `[x]` | 2026-10-22 | 86/86 verdes en Debian, 0 saltos |
+| 3 — Dev/demo desde Arch | `[x]` | 2026-10-22 | UI contra `sfjfx_dev` por el túnel; smoke test de venta correcto |
+| 4 — Retiro de Docker sf-jfx | `[x]` | 2026-10-22 | `docker compose down -v`; sin contenedor/volumen; README y `datos-demo.md` actualizados |
 | 5 — Staging y release lab | `[ ]` | — | — |
 | 6 — Validaciones Fase 2 | `[ ]` | — | — |
 | 7 — Compatibilidad Ubuntu | `[ ]` | — | Futura |

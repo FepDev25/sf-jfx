@@ -1,3 +1,5 @@
+# Opcional para desarrollo local o CI. En el entorno del homelab, PostgreSQL vive en el
+# servidor Debian y Arch no ejecuta Docker para sf-jfx. Ver README.md -> "Base de datos".
 services:
   db:
     image: postgres:17-alpine
