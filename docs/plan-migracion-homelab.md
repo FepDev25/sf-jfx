@@ -406,5 +406,5 @@ el jar; licencia y modo consulta funcionando; manifiesto de updates verificado. 
 
 **Siguiente paso:** Fases 0–6 completadas. Quedan la compatibilidad con Ubuntu (Fase 7), la
 salida global de Docker de Arch (Fase 8) y los pendientes de release del roadmap (PostgreSQL
-incluido, Windows, HTTPS, firma de paquetes y rollback de punta a punta). Eliminar las bases
-temporales `sfjfx_restore_test` y `sfjfx_migracion_test` tras la validación.
+incluido, Windows, HTTPS, firma de paquetes y rollback de punta a punta). Las bases temporales
+`sfjfx_restore_test` y `sfjfx_migracion_test` se eliminaron al cerrar la validación.
