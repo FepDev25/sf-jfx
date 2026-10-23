@@ -9,6 +9,7 @@ Documentación de diseño del sistema de facturación para supermercados.
 | [`vistas-ui.md`](vistas-ui.md) | Inventario de pantallas necesarias y quién las usa. |
 | [`roadmap.md`](roadmap.md) | Arquitectura de módulos Maven, hitos de construcción y pendientes. |
 | [`datos-demo.md`](datos-demo.md) | Credenciales, contenido de la semilla masiva y escenarios de prueba. |
+| [`plan-migracion-homelab.md`](plan-migracion-homelab.md) | Plan para salir de Docker en Arch, migrar las bases al homelab y montar el laboratorio de release. |
 | [`adr/`](adr/) | Decisiones de arquitectura (ADR). La primera define el modelo de despliegue. |
 | [`dist/`](../dist/) | Plantillas de empaquetado, actualización y operación (Linux/Windows). |
 | [`mockups/`](mockups/) | Prototipos visuales HTML de las pantallas clave. |
