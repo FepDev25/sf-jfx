@@ -4,6 +4,10 @@ Inventario de pantallas necesarias. Estructura: **ventana única** con sidebar +
 Dirección de arte: **moderno claro (SaaS)**, tipografía Inter/Roboto, iconos Ikonli, un solo tema (claro).
 Rol que ve cada vista entre paréntesis. `[flag]` = módulo que debe estar activo.
 
+> **Laboratorio (2026-10-22):** el `app-image` de staging se ejecuta en el Debian y se accede
+> por **Xvfb + x11vnc** sobre túnel SSH. `ssh -X` no es usable para JavaFX interactivo: el
+> renderizado por X11 satura el canal y la ventana queda “No responde”.
+
 ---
 
 ## Transversales

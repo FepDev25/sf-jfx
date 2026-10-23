@@ -4,9 +4,10 @@ Esta carpeta contiene las plantillas de empaquetado y actualización para el mod
 **single-tenant auto-instalable** definido en el
 [ADR-0001](../docs/adr/0001-modelo-despliegue-single-tenant.md).
 
-> **Estado:** plantillas de referencia. La generación de instaladores nativos debe validarse en
-> un entorno de release con `jpackage`, PostgreSQL portátil y los certificados de firma del
-> proveedor. El producto no incluye el módulo `dev` ni las semillas.
+> **Estado (2026-10-22):** `app-image` Linux validado en el laboratorio Debian, incluido el
+> arranque de JavaFX, el asistente, el healthcheck, los respaldos, la licencia y el modo consulta.
+> Siguen pendientes el PostgreSQL incluido, Windows, la firma de paquetes y el rollback de punta a
+> punta. El producto no incluye el módulo `dev` ni las semillas.
 
 ## Componentes de una instalación
 

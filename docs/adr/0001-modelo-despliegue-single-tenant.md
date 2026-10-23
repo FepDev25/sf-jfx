@@ -1,6 +1,6 @@
 # ADR-0001 — Modelo de despliegue: single-tenant auto-instalable
 
-- **Estado:** `ACEPTADO` — Fases 0 y 1 implementadas; Fase 2 en curso; Fase 3 pendiente
+- **Estado:** `ACEPTADO` — Fases 0 y 1 implementadas; Fase 2 en curso (laboratorio Debian validado el 2026-10-22); Fase 3 pendiente
 - **Fecha:** 2026-10-19
 - **Ámbito:** despliegue, persistencia, semillas, instalación y operación
 - **Relacionado:** [`../decisiones.md`](../decisiones.md) (Fase 14), [`../roadmap.md`](../roadmap.md) (Hito 12)
@@ -249,8 +249,10 @@ local.
 ## 6. Plan de implementación (Fases 0–3)
 
 > Estado: **Fases 0 y 1 implementadas (2026-10-19); Fase 2 en curso; Fase 3 no iniciada.**
-> Ninguna fase se considera ejecutada hasta que sus criterios de aceptación estén verificados y se
-> registre el cierre en el roadmap.
+> Laboratorio Debian validado el 2026-10-22: `app-image` Linux, healthcheck, respaldo/restauración,
+> migraciones desde el jar, licencia y modo consulta; pendientes PostgreSQL incluido, Windows,
+> HTTPS y rollback de punta a punta. Ninguna fase se considera ejecutada hasta que sus criterios
+> de aceptación estén verificados y se registre el cierre en el roadmap.
 
 ### Fase 0 — Formalización y guardas de semilla `[IMPLEMENTADA]`
 
@@ -345,6 +347,12 @@ lista de precio inicial. 79 pruebas verdes en su cierre (77 `core` + 2 `dev`).
 - **Canal de actualización**: manifiesto firmado, verificación de firma, descarga y SHA-256.
 - **Plantillas de distribución**: `dist/README.md`, constructores y actualizadores Linux/Windows.
 - **Documentación operativa** con checklist, rollback y salto mayor de PostgreSQL.
+
+**Validación en laboratorio (2026-10-22):** `app-image` Linux construido en Debian con runtime
+completo (`jlink` + `jpackage`), asistente de primer arranque, login, healthcheck con código 0,
+respaldo verificado, restauración en base temporal, migraciones `V1`–`V9` desde el runtime,
+licencia válida, modo consulta con bloqueo de cobro y canal `file:` firmado. La GUI remota se
+validó con Xvfb + x11vnc; `ssh -X` no es usable para JavaFX interactivo.
 
 **Entregables pendientes de validación en entorno de release:**
 

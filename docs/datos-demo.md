@@ -59,7 +59,8 @@ mvn -pl dev exec:java
 Para probar una instalación real de staging en el Debian:
 
 1. Base limpia (`sfjfx_staging`, sin migraciones) y el túnel/configuración listos.
-2. Lanzar la UI **en el Debian** (o por `ssh -X` desde Arch):
+2. Lanzar la UI **en el Debian**, accesible por VNC (`Xvfb + x11vnc`); `ssh -X` no es usable
+   para JavaFX interactivo:
    `SFJFX_CONFIG=~/.sfjfx/sfjfx-staging.properties mvn -pl ui javafx:run`.
 3. Completar el asistente: conexión, empresa/RUC/régimen, sucursal/bodega/caja y administrador.
    No hay credenciales por defecto ni datos de demostración.

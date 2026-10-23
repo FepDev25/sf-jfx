@@ -235,8 +235,9 @@ _Paginación en servidor para productos, ventas, clientes, proveedores y comprob
 instalador. **Modo por defecto:** `UNICA_EMPRESA`. La decisión completa, alternativas y
 consecuencias están en el [ADR-0001](adr/0001-modelo-despliegue-single-tenant.md).
 
-> **Estado:** Fases 0 y 1 implementadas (2026-10-19). Fases 2–3 no iniciadas. Las casillas se
-> marcan solo al verificar los criterios de aceptación de cada fase.
+> **Estado:** Fases 0 y 1 implementadas (2026-10-19); Fase 2 en curso (laboratorio Debian
+> validado el 2026-10-22); Fase 3 pendiente. Las casillas se marcan solo al verificar los
+> criterios de aceptación de cada fase.
 
 ### Fase 0 — Formalización y guardas de semilla `[HECHO]`
 

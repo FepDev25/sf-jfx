@@ -198,6 +198,12 @@ verificado, CLI de respaldo/salud, registro con rotación, licencia offline, mod
 de updates firmado. Fase 3 pendiente. El plan se detalla en el ADR-0001 (Fases 0–3) y en el
 [Hito 12](roadmap.md#hito-12--despliegue-auto-instalable-pendiente) del roadmap.
 
+**Laboratorio Debian (2026-10-22):** se validó el `app-image` Linux, el asistente de primer
+arranque, el healthcheck, el respaldo/restauración, las migraciones desde el jar, la licencia y
+el modo consulta con bloqueo real de cobro. La GUI remota se usa por Xvfb + x11vnc; `ssh -X` no
+es viable para JavaFX interactivo. Pendientes: PostgreSQL incluido, Windows, HTTPS, firma y
+rollback de punta a punta.
+
 ---
 
 ## Estado del brainstorming
